@@ -52,6 +52,9 @@ export default function RootLayout({
             <p style={{ margin: 0, fontSize: '15px' }}>
               © 2026 JobUpdates.com - All rights reserved.
             </p>
+            <p style={{ margin: '5px 0 0', fontSize: '13px', opacity: 0.9 }}>
+              In Collabaration with Gupta Corp. &amp; Managed By Manii Gupta
+            </p>
           </div>
         </footer>
       </body>
