@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import JobUpdatesHeader from '@/components/JobUpdatesHeader';
 import JobUpdatesNav from '@/components/JobUpdatesNav';
 import AdsFooter from '@/components/AdsFooter';
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en-US">
       <body>
+        <Analytics />
         <JobUpdatesHeader />
         <JobUpdatesNav />
         <main style={{ minHeight: '80vh', padding: '20px 0' }}>
