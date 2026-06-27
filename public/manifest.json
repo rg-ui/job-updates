@@ -1,0 +1,29 @@
+{
+  "name": "Jobniti - Sarkari Result & Govt Jobs",
+  "short_name": "Jobniti",
+  "description": "India's trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Syllabus updates. No Ads. Only Updates.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#004D40",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/jobniti-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/jobniti-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "government", "jobs"],
+  "lang": "en-IN"
+}

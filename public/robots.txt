@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://jobniti.in/sitemap.xml
+
+# Block brain/internal directories
+Disallow: /brain/
+Disallow: /api/
+Disallow: /_next/
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
