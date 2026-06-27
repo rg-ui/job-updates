@@ -22,13 +22,13 @@ async function fetchInnerPage(slug: string[]) {
     const $ = cheerio.load(html);
 
     // Extract title and description for SEO
-    let title = $('title').text() || 'Job Updates';
-    title = title.replace(/SarkariResult\.com\.cm/gi, 'JobUpdates.com')
-                 .replace(/Sarkari Result/gi, 'Job Updates');
+    let title = $('title').text() || 'Jobniti';
+    title = title.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+                 .replace(/Sarkari Result/gi, 'Jobniti');
 
     let description = $('meta[name="description"]').attr('content') || '';
-    description = description.replace(/SarkariResult\.com\.cm/gi, 'JobUpdates.com')
-                             .replace(/Sarkari Result/gi, 'Job Updates');
+    description = description.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+                             .replace(/Sarkari Result/gi, 'Jobniti');
 
     // Extract main content
     // Original site typically uses <main id="main"> or <div id="content"> or specific blocks
@@ -60,9 +60,9 @@ async function fetchInnerPage(slug: string[]) {
 
       // Rewrite text 
       mainContentHtml = entryContent.html() || '';
-      mainContentHtml = mainContentHtml.replace(/SarkariResult\.com\.cm/gi, 'JobUpdates.com')
-                                       .replace(/Sarkari Result/gi, 'Job Updates')
-                                       .replace(/SarkariResult/gi, 'JobUpdates');
+      mainContentHtml = mainContentHtml.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+                                       .replace(/Sarkari Result/gi, 'Jobniti')
+                                       .replace(/SarkariResult/gi, 'Jobniti');
     }
 
     return { title, description, mainContentHtml };
@@ -83,7 +83,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string[]
       description: data.description
     };
   } catch (err) {
-    return { title: 'Job Updates' };
+    return { title: 'Jobniti' };
   }
 }
 

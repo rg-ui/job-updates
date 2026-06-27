@@ -72,7 +72,11 @@ table {
 }
 
 .bg-red {
-  background-color: #cd0808;
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.8), rgba(46, 204, 113, 0.8));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .bg-darkblue {
@@ -113,13 +117,16 @@ table {
 }
 
 .category-title {
-  background-color: #cd0808;
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.85), rgba(46, 204, 113, 0.85));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: white;
   padding: 10px;
   font-size: 22px;
   font-weight: 600;
   text-align: center;
-  border-bottom: 2px solid white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
 }
 
 .category-list {
@@ -130,4 +137,129 @@ table {
 .category-list li {
   margin-bottom: 12px;
   font-weight: 600;
+}
+
+/* GenZ Glassmorphism SEO Section */
+.glass-card {
+  background: rgba(240, 248, 255, 0.5); /* AliceBlue with transparency */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(135, 206, 235, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.glass-title {
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.95), rgba(46, 204, 113, 0.95));
+  color: white;
+  padding: 16px 24px;
+  font-size: 22px;
+  font-weight: 700;
+  text-shadow: 0px 1px 3px rgba(0,0,0,0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.glass-body {
+  padding: 25px;
+  color: #374151; /* Dark Gray */
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.glass-body p {
+  margin-bottom: 16px;
+}
+
+.glass-body ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.glass-body li {
+  margin-bottom: 12px;
+  padding-left: 28px;
+  position: relative;
+}
+
+.glass-body li::before {
+  content: "✨";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 16px;
+}
+
+.modern-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-right: 12px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  transition: transform 0.2s;
+}
+
+.modern-badge:hover {
+  transform: scale(1.05);
+}
+
+.disclaimer-box {
+  background: rgba(255, 235, 235, 0.6);
+  border-left: 4px solid #ef4444;
+  padding: 12px 18px;
+  border-radius: 0 10px 10px 0;
+  font-size: 14px;
+  color: #b91c1c;
+  backdrop-filter: blur(4px);
+}
+
+.job-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.job-type-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.job-type-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  border-color: #87CEEB;
+}
+
+.job-type-card h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.job-type-card p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
 }

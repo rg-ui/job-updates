@@ -1,13 +1,20 @@
 import React from 'react';
 import AdsSidebar from '@/components/AdsSidebar';
+import SeoContent from '@/components/SeoContent';
+import StateJobFilter from '@/components/StateJobFilter';
 import * as cheerio from 'cheerio';
 
-// Force dynamic rendering so there is absolute zero delay on live updates
-export const dynamic = 'force-dynamic';
+// Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
+export const revalidate = 60;
 
 async function fetchSarkariData() {
   try {
-    const res = await fetch('https://sarkariresult.com.cm/', { cache: 'no-store' });
+    // Use a standard User-Agent so we don't look like a malicious bot
+    const res = await fetch('https://sarkariresult.com.cm/', {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
     const html = await res.text();
     const $ = cheerio.load(html);
 
@@ -27,7 +34,8 @@ async function fetchSarkariData() {
         }
         
         let text = $(a).text().trim();
-        text = text.replace(/Sarkari\s*Result/gi, 'Job Updates').replace(/SarkariResult/gi, 'JobUpdates');
+        // SEO: Keep 'Sarkari Result' keyword intact, only replace the target domain string
+        text = text.replace(/sarkariresult\.com\.cm/gi, 'jobniti.in');
 
         return {
           text: text,
@@ -38,15 +46,21 @@ async function fetchSarkariData() {
       if (rawLinks.length === 0) return;
 
       // Figure out the Title for the Box
-      // Sometimes it's wrapped in an <h2>, <h3> or <strong>
-      let title = $(el).find('h2, h3, h4, strong').first().text().trim();
-      
-      // Fallback: If no heading tag is found, try taking the first line of text
+      // Source site uses <p class="gb-headline gb-headline-text"> for section titles
+      let title = $(el).find('.gb-headline-text').first().text().trim();
+
+      // Fallback: try h2, h3, h4, strong
+      if (!title) {
+        title = $(el).find('h2, h3, h4, strong').first().text().trim();
+      }
+
+      // Last resort fallback
       if (!title) {
         title = $(el).text().trim().split('\n')[0].trim();
       }
 
-      title = title.replace(/Sarkari\s*Result/gi, 'Job Updates').replace(/SarkariResult/gi, 'JobUpdates');
+      // SEO: Keep 'Sarkari Result' intact
+      title = title.replace(/sarkariresult\.com\.cm/gi, 'jobniti.in');
 
       // Filter out the link if it is just the title heading itself
       let links = rawLinks.filter(l => l.text !== title);
@@ -64,7 +78,15 @@ async function fetchSarkariData() {
 
     return { blocks, topNotices };
   } catch (error) {
-    console.error("Error fetching data:", error);
+    // Enhanced security logging for scraping failures
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'ERROR',
+      type: 'SCRAPING_FAILURE',
+      targetUrl: 'https://sarkariresult.com.cm/',
+      message: error instanceof Error ? error.message : String(error)
+    };
+    console.error(JSON.stringify(logEntry));
     return null;
   }
 }
@@ -83,18 +105,7 @@ export default async function Home() {
         {/* Main Content Area */}
         <div style={{ flex: '1 1 70%', minWidth: '300px' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-            {data.blocks.map((block, index) => (
-              <div className="category-box" key={index}>
-                <h2 className="category-title" style={{textTransform: 'capitalize'}}>{block.title}</h2>
-                <ul className="category-list">
-                  {block.links.map((item, i) => (
-                    <li key={i}><a href={item.href}>{item.text}</a></li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <StateJobFilter initialBlocks={data.blocks} />
 
           {/* Important Links / Notice Section */}
           {data.topNotices.length > 0 && (
@@ -117,6 +128,9 @@ export default async function Home() {
         </div>
 
       </div>
+      
+      {/* GenZ SEO Content Section */}
+      <SeoContent />
     </div>
   );
 }
