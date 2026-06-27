@@ -57,32 +57,37 @@ export default function JobUpdatesHeader() {
           50% { transform: translateY(-8px); }
           100% { transform: translateY(0px); }
         }
-        @keyframes pulse-badge {
-          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.7); }
-          70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 61, 0, 0); }
-          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 61, 0, 0); }
+        @keyframes pulse-dot {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.4); opacity: 0.7; }
+          100% { transform: scale(1); opacity: 1; }
         }
         @keyframes quoteGlow {
-          0% { box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
-          50% { box-shadow: 0 0 25px rgba(46, 204, 113, 0.5); }
-          100% { box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
+          0% { box-shadow: 0 0 8px rgba(46, 204, 113, 0.15); }
+          50% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
+          100% { box-shadow: 0 0 8px rgba(46, 204, 113, 0.15); }
         }
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .animated-header-bg {
-          background: linear-gradient(-45deg, rgba(135, 206, 235, 0.7), rgba(34, 193, 195, 0.7), rgba(46, 204, 113, 0.7), rgba(135, 206, 235, 0.7));
+          background: linear-gradient(-45deg,
+            rgba(135, 206, 235, 0.75),
+            rgba(34, 193, 195, 0.75),
+            rgba(46, 204, 113, 0.75),
+            rgba(135, 206, 235, 0.75));
           background-size: 400% 400%;
           animation: gradientBG 15s ease infinite;
         }
         .glass-blob {
           position: absolute;
-          filter: blur(60px);
+          filter: blur(55px);
           z-index: 0;
           border-radius: 50%;
-          opacity: 0.8;
+          opacity: 0.7;
           animation: float 8s ease-in-out infinite;
+          pointer-events: none;
         }
         .daily-quote-bar {
           animation: quoteGlow 4s ease-in-out infinite, fadeInUp 0.8s ease forwards;
@@ -100,173 +105,223 @@ export default function JobUpdatesHeader() {
           font-weight: 700;
           margin-top: 4px;
         }
+        /* Mobile responsive header styles */
+        @media (max-width: 480px) {
+          .header-logo-img {
+            width: 72px !important;
+            height: 72px !important;
+            padding: 8px !important;
+          }
+          .header-title {
+            font-size: 28px !important;
+            letter-spacing: 1px !important;
+          }
+          .header-subtitle {
+            font-size: 14px !important;
+          }
+          .header-badges {
+            display: none !important;
+          }
+          .quote-text {
+            font-size: 12px !important;
+          }
+          .quote-author {
+            font-size: 10px !important;
+          }
+          .daily-quote-bar {
+            padding: 10px 12px !important;
+            gap: 8px !important;
+          }
+          .quote-icon {
+            font-size: 20px !important;
+          }
+          .aaj-ka-vichar-badge {
+            display: none !important;
+          }
+          .no-ads-badge {
+            font-size: 7px !important;
+            padding: 4px 7px !important;
+            right: -40px !important;
+            top: -14px !important;
+          }
+          .top-microbar-right {
+            display: none !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .animated-header-bg {
+            padding: 20px 12px 16px !important;
+          }
+          .header-main-row {
+            gap: 20px !important;
+          }
+          .header-title {
+            font-size: 32px !important;
+          }
+          .header-badges {
+            display: none !important;
+          }
+        }
       `}} />
 
-      {/* Decorative Blobs */}
-      <div className="glass-blob" style={{ background: '#00E5FF', width: '300px', height: '300px', top: '-100px', left: '-50px' }}></div>
-      <div className="glass-blob" style={{ background: '#00E676', width: '250px', height: '250px', bottom: '-100px', right: '-50px', animationDelay: '2s' }}></div>
+      {/* Background blobs */}
+      <div className="glass-blob" style={{ background: '#00E5FF', width: '250px', height: '250px', top: '-80px', left: '-40px' }}></div>
+      <div className="glass-blob" style={{ background: '#00E676', width: '200px', height: '200px', bottom: '-80px', right: '-40px', animationDelay: '2s' }}></div>
 
       {/* Top micro-bar */}
-      <div style={{ background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(10px)', position: 'relative', zIndex: 1, borderBottom: '1px solid rgba(255,255,255,0.4)' }}>
-        <div className="grid-container" style={{ padding: '6px 15px', display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '600', color: '#333' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#FF3D00', borderRadius: '50%', animation: 'pulse-badge 2s infinite' }}></span>
+      <div style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)', position: 'relative', zIndex: 1, borderBottom: '1px solid rgba(255,255,255,0.4)' }}>
+        <div className="grid-container" style={{ padding: '5px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '600', color: '#333', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
+            <span style={{ display: 'inline-block', width: '7px', height: '7px', background: '#FF3D00', borderRadius: '50%', animation: 'pulse-dot 2s infinite' }}></span>
             Live Updates 24/7
           </div>
-          <div>India&apos;s #1 Trusted Govt Job Portal</div>
+          <div className="top-microbar-right" style={{ textAlign: 'right', fontSize: '11px' }}>India&apos;s Trusted Govt Job Portal</div>
         </div>
       </div>
 
-      {/* Main Header Area */}
+      {/* Main Header */}
       <div
         className="animated-header-bg"
-        style={{
-          padding: '40px 20px 30px',
-          position: 'relative',
-          zIndex: 1,
-          backdropFilter: 'blur(15px)',
-          WebkitBackdropFilter: 'blur(15px)',
-        }}
+        style={{ padding: '28px 12px 22px', position: 'relative', zIndex: 1, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
       >
-        <div className="grid-container" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '50px' }}>
-
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '25px', textDecoration: 'none' }}>
-            <div style={{ position: 'relative', animation: 'float 5s ease-in-out infinite' }}>
+        <div
+          className="grid-container header-main-row"
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px' }}
+        >
+          {/* Logo + Name */}
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
+            <div style={{ position: 'relative', animation: 'float 5s ease-in-out infinite', flexShrink: 0 }}>
               <img
                 src="/jobniti-logo.png"
                 alt="Jobniti Logo"
+                className="header-logo-img"
                 style={{
-                  width: '120px',
-                  height: '120px',
+                  width: '100px',
+                  height: '100px',
                   objectFit: 'cover',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  padding: '12px',
+                  background: 'rgba(255,255,255,0.95)',
+                  padding: '10px',
                   borderRadius: '50%',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.15), inset 0 0 10px rgba(255,255,255,0.5)',
-                  border: '3px solid rgba(255, 255, 255, 0.9)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+                  border: '3px solid rgba(255,255,255,0.9)',
+                  display: 'block',
                 }}
               />
-              <div style={{ position: 'absolute', top: '-18px', right: '-55px', background: 'linear-gradient(135deg, #004D40, #0A2540)', color: '#fff', padding: '5px 10px', borderRadius: '20px', fontSize: '9px', fontWeight: '800', boxShadow: '0 4px 10px rgba(0,77,64,0.5)', letterSpacing: '0.5px', whiteSpace: 'nowrap', textAlign: 'center', lineHeight: '1.4' }}>
+              <div
+                className="no-ads-badge"
+                style={{
+                  position: 'absolute',
+                  top: '-16px',
+                  right: '-48px',
+                  background: 'linear-gradient(135deg, #004D40, #0A2540)',
+                  color: '#fff',
+                  padding: '4px 9px',
+                  borderRadius: '20px',
+                  fontSize: '8px',
+                  fontWeight: '800',
+                  boxShadow: '0 3px 8px rgba(0,77,64,0.5)',
+                  letterSpacing: '0.4px',
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                  lineHeight: '1.4',
+                }}
+              >
                 NO ADS<br/>ONLY UPDATES
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <h1 style={{
-                fontSize: '52px',
-                fontWeight: '900',
-                background: 'linear-gradient(135deg, #0A2540 0%, #004D40 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textTransform: 'uppercase',
-                letterSpacing: '2px',
-                margin: '0',
-                filter: 'drop-shadow(2px 4px 6px rgba(0,0,0,0.1))',
-              }}>
+            <div>
+              <h1
+                className="header-title"
+                style={{
+                  fontSize: '46px',
+                  fontWeight: '900',
+                  background: 'linear-gradient(135deg, #0A2540 0%, #004D40 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textTransform: 'uppercase',
+                  letterSpacing: '2px',
+                  margin: '0',
+                  filter: 'drop-shadow(1px 3px 4px rgba(0,0,0,0.1))',
+                  lineHeight: 1.1,
+                }}
+              >
                 Jobniti
               </h1>
-              <p style={{
-                fontSize: '20px',
-                color: '#004D40',
-                margin: '4px 0 0 0',
-                fontWeight: '700',
-                letterSpacing: '1px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}>
+              <p
+                className="header-subtitle"
+                style={{ fontSize: '17px', color: '#004D40', margin: '5px 0 0', fontWeight: '700', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}
+              >
                 jobniti.in
-                <span style={{ fontSize: '12px', background: 'rgba(255,255,255,0.7)', color: '#2E7D32', padding: '3px 10px', borderRadius: '15px', border: '1px solid rgba(165, 214, 167, 0.5)', fontWeight: '800' }}>
+                <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.7)', color: '#2E7D32', padding: '2px 9px', borderRadius: '12px', border: '1px solid rgba(165,214,167,0.5)', fontWeight: '800' }}>
                   ✓ Official
                 </span>
               </p>
             </div>
           </a>
 
-          {/* Badges Area */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
-            <div style={{
-              background: 'rgba(255,255,255,0.8)',
-              backdropFilter: 'blur(10px)',
-              padding: '12px 25px',
-              borderRadius: '30px',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-              border: '1px solid rgba(255,255,255,0.8)',
-              display: 'flex',
-              gap: '20px',
-            }}>
-              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '20px' }}>🚀</span> Latest Results
+          {/* Badges — hidden on mobile via CSS */}
+          <div className="header-badges" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+            <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', padding: '10px 22px', borderRadius: '28px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', gap: '18px' }}>
+              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>🚀</span> Latest Results
               </span>
               <span style={{ color: '#ccc' }}>|</span>
-              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '20px' }}>🎯</span> Admit Cards
+              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>🎯</span> Admit Cards
               </span>
             </div>
-
-            <div style={{
-              background: 'linear-gradient(135deg, #004D40 0%, #0A2540 100%)',
-              color: 'white',
-              padding: '10px 30px',
-              borderRadius: '25px',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              letterSpacing: '0.5px',
-            }}>
-              Search 500+ Sarkari Jobs Right Now
+            <div style={{ background: 'linear-gradient(135deg, #004D40 0%, #0A2540 100%)', color: 'white', padding: '9px 26px', borderRadius: '22px', fontSize: '13px', fontWeight: '600', boxShadow: '0 4px 14px rgba(0,0,0,0.18)', letterSpacing: '0.4px' }}>
+              Search 500+ Sarkari Jobs
             </div>
           </div>
-
         </div>
 
-        {/* Daily Motivational Quote Banner */}
-        <div className="grid-container" style={{ marginTop: '25px' }}>
+        {/* Daily Quote */}
+        <div className="grid-container" style={{ marginTop: '18px' }}>
           <div
             className="daily-quote-bar"
             style={{
-              background: 'rgba(255, 255, 255, 0.75)',
-              backdropFilter: 'blur(15px)',
-              WebkitBackdropFilter: 'blur(15px)',
-              borderRadius: '20px',
-              padding: '14px 25px',
-              border: '1px solid rgba(46, 204, 113, 0.4)',
+              background: 'rgba(255,255,255,0.78)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              borderRadius: '18px',
+              padding: '12px 20px',
+              border: '1px solid rgba(46,204,113,0.35)',
               display: 'flex',
               alignItems: 'center',
-              gap: '15px',
-              maxWidth: '800px',
+              gap: '12px',
+              maxWidth: '780px',
               margin: '0 auto',
             }}
           >
-            <span style={{ fontSize: '28px', lineHeight: 1, flexShrink: 0, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}>💡</span>
-
-            <div style={{ flex: 1, textAlign: 'center' }}>
+            <span className="quote-icon" style={{ fontSize: '24px', lineHeight: 1, flexShrink: 0 }}>💡</span>
+            <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
               <div className="quote-text">&ldquo;{quote.text}&rdquo;</div>
               <div className="quote-author">— {quote.author}</div>
             </div>
-
-            <div style={{
-              flexShrink: 0,
-              background: 'linear-gradient(135deg, #2E7D32, #004D40)',
-              color: 'white',
-              padding: '5px 12px',
-              borderRadius: '20px',
-              fontSize: '11px',
-              fontWeight: '700',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 2px 8px rgba(46, 204, 113, 0.4)',
-            }}>
+            <div
+              className="aaj-ka-vichar-badge"
+              style={{
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #2E7D32, #004D40)',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '18px',
+                fontSize: '10px',
+                fontWeight: '700',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 6px rgba(46,204,113,0.4)',
+              }}
+            >
               ✨ Aaj ka Vichar
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Bottom gradient border */}
+      {/* Gradient bottom border */}
       <div style={{ height: '3px', background: 'linear-gradient(90deg, #00E5FF, #00E676, #00E5FF)', backgroundSize: '200%', animation: 'gradientBG 4s ease infinite' }}></div>
-
     </header>
   );
 }

@@ -99,18 +99,17 @@ export default async function Home() {
   }
 
   return (
-    <div className="grid-container">
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        
-        {/* Main Content Area */}
-        <div style={{ flex: '1 1 70%', minWidth: '300px' }}>
-          
+    <div className="grid-container" style={{ paddingTop: '10px', paddingBottom: '20px' }}>
+      <div className="main-layout">
+
+        {/* Main Content */}
+        <div className="main-content">
           <StateJobFilter initialBlocks={data.blocks} />
 
           {/* Important Links / Notice Section */}
           {data.topNotices.length > 0 && (
-            <div style={{ marginTop: '30px' }} className="category-box">
-              <h2 className="category-title" style={{ backgroundColor: '#2f4468' }}>Top Notices & Important Links</h2>
+            <div style={{ marginTop: '20px' }} className="category-box">
+              <h2 className="category-title" style={{ backgroundColor: '#2f4468' }}>Top Notices &amp; Important Links</h2>
               <ul className="category-list" style={{ columns: 2 }}>
                 {data.topNotices.map((item, index) => (
                   <li key={`notice-${index}`}><a href={item.href} style={{ color: '#0000c0' }}>{item.text}</a></li>
@@ -118,18 +117,17 @@ export default async function Home() {
               </ul>
             </div>
           )}
-
         </div>
 
-        {/* Sidebar Area */}
-        <div style={{ flex: '1 1 25%', minWidth: '250px' }}>
+        {/* Sidebar — desktop only (hidden on mobile via CSS) */}
+        <div className="sidebar-area">
           <AdsSidebar />
           <AdsSidebar />
         </div>
 
       </div>
-      
-      {/* GenZ SEO Content Section */}
+
+      {/* SEO Content */}
       <SeoContent />
     </div>
   );

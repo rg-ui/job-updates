@@ -108,7 +108,7 @@ export default function StateJobFilter({ initialBlocks }: StateJobFilterProps) {
       {/* Results Grid with Framer Motion layout animations */}
       <motion.div 
         layout
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}
+        className="sections-grid"
       >
         <AnimatePresence mode="popLayout">
           {filteredBlocks.length > 0 ? (
