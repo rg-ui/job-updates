@@ -101,6 +101,8 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
+import Script from 'next/script';
+
 export default function RootLayout({
   children,
 }: {
@@ -109,6 +111,19 @@ export default function RootLayout({
   return (
     <html lang="en-IN">
       <head>
+        {/* Google Analytics Tag */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4Y1C56SE41"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4Y1C56SE41');
+          `}
+        </Script>
         {/* Structured Data: Organization + WebSite for Google */}
         <script
           type="application/ld+json"
