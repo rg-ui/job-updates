@@ -36,6 +36,7 @@ async function fetchSarkariData() {
         let text = $(a).text().trim();
         // SEO: Keep 'Sarkari Result' keyword intact, only replace the target domain string
         text = text.replace(/sarkariresult\.com\.cm/gi, 'jobniti.in');
+        text = text.replace(/Sarkari Result/gi, 'Jobniti');
 
         return {
           text: text,
@@ -61,12 +62,21 @@ async function fetchSarkariData() {
 
       // SEO: Keep 'Sarkari Result' intact
       title = title.replace(/sarkariresult\.com\.cm/gi, 'jobniti.in');
+      title = title.replace(/Sarkari Result/gi, 'Jobniti');
 
       // Filter out the link if it is just the title heading itself
       let links = rawLinks.filter(l => l.text !== title);
 
+      // Connect With Us: Only keep WhatsApp and Telegram links
+      if (title.toLowerCase().includes('connect') || title.toLowerCase().includes('follow')) {
+        links = links.filter(l =>
+          l.text.toLowerCase().includes('whatsapp') ||
+          l.text.toLowerCase().includes('telegram')
+        );
+      }
+
       // If a block has many links, it's a category box (Result, Admit Card, Syllabus, etc)
-      if (links.length >= 2) {
+      if (links.length >= 2 || (title.toLowerCase().includes('connect') && links.length > 0)) {
         // Prevent empty titles
         if (!title || title.length > 50) title = 'Updates';
         blocks.push({ title, links });

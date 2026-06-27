@@ -6,7 +6,7 @@ export default function SeoContent() {
       
       {/* Block 1 */}
       <section className="glass-card">
-        <h2 className="glass-title">🚀 Sarkari Result - Your Trusted Source for Latest Govt Jobs</h2>
+        <h2 className="glass-title">🚀 Jobniti - Your Trusted Source for Latest Govt Jobs</h2>
         <div className="glass-body">
           <p>
             Welcome to <strong>Jobniti</strong>, India's most dependable and lightning-fast platform for all Sarkari Naukri, latest Govt Job announcements, Admit Cards, Sarkari Results, Answer Keys, Syllabus, and Admissions updates.
@@ -42,10 +42,10 @@ export default function SeoContent() {
 
       {/* Block 3 */}
       <section className="glass-card">
-        <h2 className="glass-title">🎯 What Kind of Sarkari Result & Jobs Are Available?</h2>
+        <h2 className="glass-title">🎯 What Kind of Jobs Are Available on Jobniti?</h2>
         <div className="glass-body">
           <p>
-            India offers a massive variety of Sarkari Result openings across multiple fields matching different qualifications and interests:
+            India offers a massive variety of Jobniti openings across multiple fields matching different qualifications and interests:
           </p>
           <div className="job-types-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '20px' }}>
             <div className="job-type-card">
