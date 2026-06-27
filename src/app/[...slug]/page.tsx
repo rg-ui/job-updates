@@ -47,6 +47,19 @@ async function fetchInnerPage(slug: string[]) {
       // Rewrite internal links to localhost and social links to user's groups
       entryContent.find('a').each((_, a) => {
         let href = $(a).attr('href');
+        const text = $(a).text().toLowerCase();
+
+        // Remove mobile app download links
+        if (text.includes('app now') || text.includes('mobile app') || text.includes('android app') || text.includes('app download')) {
+          const parent = $(a).parent();
+          if (parent.is('p') && parent.text().trim() === $(a).text().trim()) {
+            parent.remove();
+          } else {
+            $(a).remove();
+          }
+          return;
+        }
+
         if (href) {
           if (href.includes('whatsapp.com')) {
             $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
