@@ -6,15 +6,28 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
+const innerPagesCache = new Map<string, { data: { title: string, description: string, mainContentHtml: string } | null, timestamp: number }>();
+const CACHE_TTL = 300 * 1000; // 5 minutes cache
+
 async function fetchInnerPage(slug: string[]) {
   const path = slug.join('/');
+  const now = Date.now();
+  const cached = innerPagesCache.get(path);
+
+  if (cached && (now - cached.timestamp < CACHE_TTL)) {
+    return cached.data;
+  }
+
   try {
     const res = await fetch(`https://sarkariresult.com.cm/${path}/`, {
       next: { revalidate: 60 }
     });
     
     if (!res.ok) {
-      if (res.status === 404) return null;
+      if (res.status === 404) {
+        innerPagesCache.set(path, { data: null, timestamp: Date.now() });
+        return null;
+      }
       throw new Error(`Failed to fetch page: ${res.status}`);
     }
 
@@ -78,9 +91,17 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/SarkariResult/gi, 'Jobniti');
     }
 
-    return { title, description, mainContentHtml };
+    const result = { title, description, mainContentHtml };
+    innerPagesCache.set(path, { data: result, timestamp: Date.now() });
+    return result;
   } catch (error) {
     console.error("Error fetching inner page:", error);
+    
+    // Return stale cache if available
+    if (cached) {
+      console.warn("Using stale cache for inner page due to network failure");
+      return cached.data;
+    }
     throw error;
   }
 }

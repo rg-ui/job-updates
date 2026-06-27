@@ -7,7 +7,16 @@ import * as cheerio from 'cheerio';
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const revalidate = 60;
 
+let cachedData: { blocks: any[], topNotices: any[] } | null = null;
+let cacheTime = 0;
+const CACHE_TTL = 300 * 1000; // 5 minutes cache
+
 async function fetchSarkariData() {
+  const now = Date.now();
+  if (cachedData && (now - cacheTime < CACHE_TTL)) {
+    return cachedData;
+  }
+
   try {
     // Use a standard User-Agent so we don't look like a malicious bot
     const res = await fetch('https://sarkariresult.com.cm/', {
@@ -86,7 +95,10 @@ async function fetchSarkariData() {
       }
     });
 
-    return { blocks, topNotices };
+    const result = { blocks, topNotices };
+    cachedData = result;
+    cacheTime = Date.now();
+    return result;
   } catch (error) {
     // Enhanced security logging for scraping failures
     const logEntry = {
@@ -97,6 +109,12 @@ async function fetchSarkariData() {
       message: error instanceof Error ? error.message : String(error)
     };
     console.error(JSON.stringify(logEntry));
+    
+    // Return stale cache if available when backend fails
+    if (cachedData) {
+      console.warn("Using stale cache due to scraping failure");
+      return cachedData;
+    }
     return null;
   }
 }

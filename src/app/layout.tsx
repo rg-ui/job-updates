@@ -4,122 +4,102 @@ import { Analytics } from '@vercel/analytics/next';
 import JobUpdatesHeader from '@/components/JobUpdatesHeader';
 import JobUpdatesNav from '@/components/JobUpdatesNav';
 import AdsFooter from '@/components/AdsFooter';
-import * as cheerio from 'cheerio';
+import { Open_Sans } from 'next/font/google';
+
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
 
 const SITE_URL = 'https://jobniti.in';
 const SITE_NAME = 'Jobniti';
 
-export async function generateMetadata(): Promise<Metadata> {
-  let fetchedTitle = '';
-  let fetchedDescription = '';
+export const metadata: Metadata = {
+  // === CORE SEO ===
+  title: {
+    default: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs | jobniti.in',
+    template: `%s | Jobniti - jobniti.in`,
+  },
+  description: 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus, Sarkari Naukri updates. No Ads. Only Updates.',
+  keywords: [
+    'jobniti', 'jobniti.in', 'sarkari result', 'sarkari result 2026',
+    'latest govt jobs', 'sarkari naukri', 'admit card', 'answer key',
+    'syllabus', 'government jobs india', 'sarkari result official',
+    'latest sarkari jobs', 'result 2026', 'admit card 2026',
+    'SSC jobs', 'UPSC', 'Railway jobs', 'RRB NTPC', 'bank jobs',
+    'police bharti', 'teacher vacancy', 'sarkari result jobniti',
+    'jobniti sarkari result', 'govt job portal india',
+  ],
 
-  try {
-    const res = await fetch('https://sarkariresult.com.cm/', {
-      next: { revalidate: 3600 },
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
-    });
-    const html = await res.text();
-    const $ = cheerio.load(html);
-    fetchedTitle = $('title').text().replace(/SarkariResult\.com\.cm/gi, 'jobniti.in');
-    fetchedDescription = ($('meta[name="description"]').attr('content') || '').replace(/SarkariResult\.com\.cm/gi, 'jobniti.in');
-  } catch {
-    // use defaults below
-  }
+  // === CANONICAL ===
+  alternates: {
+    canonical: SITE_URL,
+  },
 
-  const title = fetchedTitle || 'Jobniti | Sarkari Result, Latest Govt Jobs 2026, Admit Card, Result';
-  const description = fetchedDescription ||
-    'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus, Sarkari Naukri updates. No Ads. Only Updates.';
-
-  return {
-    // === CORE SEO ===
-    title: {
-      default: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs | jobniti.in',
-      template: `%s | Jobniti - jobniti.in`,
-    },
-    description,
-    keywords: [
-      'jobniti', 'jobniti.in', 'sarkari result', 'sarkari result 2026',
-      'latest govt jobs', 'sarkari naukri', 'admit card', 'answer key',
-      'syllabus', 'government jobs india', 'sarkari result official',
-      'latest sarkari jobs', 'result 2026', 'admit card 2026',
-      'SSC jobs', 'UPSC', 'Railway jobs', 'RRB NTPC', 'bank jobs',
-      'police bharti', 'teacher vacancy', 'sarkari result jobniti',
-      'jobniti sarkari result', 'govt job portal india',
+  // === FAVICON & ICONS ===
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+      { url: '/jobniti-logo.png', sizes: '192x192', type: 'image/png' },
     ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+  },
 
-    // === CANONICAL ===
-    alternates: {
-      canonical: SITE_URL,
-    },
+  // === OPEN GRAPH ===
+  openGraph: {
+    type: 'website',
+    locale: 'en_IN',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs | jobniti.in',
+    description: 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus, Sarkari Naukri updates. No Ads. Only Updates.',
+    images: [
+      {
+        url: `${SITE_URL}/og-image.png`,
+        width: 1200,
+        height: 630,
+        alt: 'Jobniti - Latest Sarkari Result & Govt Jobs 2026',
+      },
+    ],
+  },
 
-    // === FAVICON & ICONS ===
-    icons: {
-      icon: [
-        { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-        { url: '/jobniti-logo.png', sizes: '192x192', type: 'image/png' },
-      ],
-      apple: [
-        { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
-      ],
-      shortcut: '/favicon.ico',
-    },
+  // === TWITTER ===
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs',
+    description: 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus, Sarkari Naukri updates. No Ads. Only Updates.',
+    images: [`${SITE_URL}/og-image.png`],
+  },
 
-    // === OPEN GRAPH (Facebook, WhatsApp, LinkedIn) ===
-    openGraph: {
-      type: 'website',
-      locale: 'en_IN',
-      url: SITE_URL,
-      siteName: SITE_NAME,
-      title: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs | jobniti.in',
-      description,
-      images: [
-        {
-          url: `${SITE_URL}/og-image.png`,
-          width: 1200,
-          height: 630,
-          alt: 'Jobniti - Latest Sarkari Result & Govt Jobs 2026',
-        },
-      ],
-    },
-
-    // === TWITTER / X CARD ===
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs',
-      description,
-      images: [`${SITE_URL}/og-image.png`],
-    },
-
-    // === ROBOTS ===
-    robots: {
+  // === ROBOTS ===
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
       index: true,
       follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
+  },
 
-    // === VERIFICATION ===
-    verification: {
-      google: 'M22837Z5f_reRc_Y6-TbEzn3XhEKyg6WlWDB-2B0FW0', // keep existing
-    },
+  // === VERIFICATION ===
+  verification: {
+    google: 'M22837Z5f_reRc_Y6-TbEzn3XhEKyg6WlWDB-2B0FW0',
+  },
 
-    // === APP META ===
-    applicationName: 'Jobniti',
-    category: 'Government Jobs & Sarkari Result',
-    creator: 'Jobniti Team',
-    publisher: 'Jobniti - jobniti.in',
-
-    // === MANIFEST ===
-    manifest: '/manifest.json',
-  };
-}
+  // === APP META ===
+  applicationName: 'Jobniti',
+  category: 'Government Jobs & Sarkari Result',
+  creator: 'Jobniti Team',
+  publisher: 'Jobniti - jobniti.in',
+  manifest: '/manifest.json',
+};
 
 export default function RootLayout({
   children,
@@ -190,7 +170,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>
+      <body className={openSans.className}>
         <Analytics />
         <JobUpdatesHeader />
         <JobUpdatesNav />
