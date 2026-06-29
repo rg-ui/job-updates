@@ -1,12 +1,22 @@
 import React from 'react';
 
-export default function SeoContent() {
+interface SeoContentProps {
+  topNotices?: { text: string; href: string }[];
+}
+
+export default function SeoContent({ topNotices = [] }: SeoContentProps) {
+  let dynamicHeading = "🚀 Jobniti - Your Trusted Source for Latest Govt Jobs";
+  if (topNotices.length > 0) {
+    const topText = topNotices.slice(0, 2).map(n => n.text).join(' & ');
+    dynamicHeading = `🚀 Latest Updates: ${topText} | Sarkari Result on Jobniti`;
+  }
+
   return (
     <div className="seo-content-container" style={{ marginTop: '50px', marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
       
       {/* Block 1 */}
       <section className="glass-card">
-        <h1 className="glass-title">🚀 Jobniti - Your Trusted Source for Latest Govt Jobs</h1>
+        <h1 className="glass-title">{dynamicHeading}</h1>
         <div className="glass-body">
           <p>
             Welcome to <strong>Jobniti</strong>, India's most dependable and lightning-fast platform for <strong>Sarkari Result 2026</strong>, <strong>latest Govt Jobs</strong>, <strong>Admit card updates</strong>, Answer Keys, Syllabus, and Admissions updates. 

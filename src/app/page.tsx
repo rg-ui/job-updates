@@ -3,6 +3,10 @@ import AdsSidebar from '@/components/AdsSidebar';
 import SeoContent from '@/components/SeoContent';
 import StateJobFilter from '@/components/StateJobFilter';
 import * as cheerio from 'cheerio';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { Metadata } from 'next';
 
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const revalidate = 60;
@@ -95,7 +99,42 @@ async function fetchSarkariData() {
       }
     });
 
-    const result = { blocks, topNotices };
+    // Diffing logic for dynamic section sorting
+    const stateFilePath = path.join(os.tmpdir(), 'jobniti_state.json');
+    let previousState: Record<string, { firstLinkHref: string, lastUpdated: number }> = {};
+    
+    try {
+      if (fs.existsSync(stateFilePath)) {
+        previousState = JSON.parse(fs.readFileSync(stateFilePath, 'utf8'));
+      }
+    } catch (e) {
+      console.warn('Could not read state file', e);
+    }
+
+    const blocksWithTimestamp = blocks.map(block => {
+      const firstLinkHref = block.links[0]?.href || '';
+      let lastUpdated = previousState[block.title]?.lastUpdated || 0;
+      
+      // If this section has a new top link, update its timestamp
+      if (previousState[block.title]?.firstLinkHref !== firstLinkHref) {
+        lastUpdated = Date.now();
+      }
+      
+      previousState[block.title] = { firstLinkHref, lastUpdated };
+      return { ...block, lastUpdated };
+    });
+
+    // Save the new state
+    try {
+      fs.writeFileSync(stateFilePath, JSON.stringify(previousState));
+    } catch (e) {
+      console.warn('Could not write state file', e);
+    }
+
+    // Sort blocks by lastUpdated descending (newly updated sections on top)
+    const sortedBlocks = blocksWithTimestamp.sort((a, b) => b.lastUpdated - a.lastUpdated);
+
+    const result = { blocks: sortedBlocks, topNotices };
     cachedData = result;
     cacheTime = Date.now();
     return result;
@@ -117,6 +156,23 @@ async function fetchSarkariData() {
     }
     return null;
   }
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const data = await fetchSarkariData();
+  let dynamicTitle = 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs';
+  let dynamicDesc = 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs.';
+
+  if (data && data.topNotices && data.topNotices.length > 0) {
+    const topKeywords = data.topNotices.slice(0, 2).map(n => n.text).join(' | ');
+    dynamicTitle = `${topKeywords} | Jobniti - Sarkari Result`;
+    dynamicDesc = `Latest Update: ${topKeywords}. Jobniti.in is your trusted source for Sarkari Result, Govt Jobs, Admit Card and Answer keys.`;
+  }
+
+  return {
+    title: dynamicTitle,
+    description: dynamicDesc,
+  };
 }
 
 export default async function Home() {
@@ -156,7 +212,7 @@ export default async function Home() {
       </div>
 
       {/* SEO Content */}
-      <SeoContent />
+      <SeoContent topNotices={data.topNotices} />
     </div>
   );
 }
