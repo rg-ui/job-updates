@@ -86,6 +86,15 @@ async function fetchSarkariData() {
           l.text.toLowerCase().includes('whatsapp') ||
           l.text.toLowerCase().includes('telegram')
         );
+        // Add Social Media Links
+        links.push({
+          text: 'Jobniti @Instagram',
+          href: 'https://www.instagram.com/jobniti.in?igsh=Mm5oY3J3NHp6N3Zz'
+        });
+        links.push({
+          text: 'Jobniti @Facebook',
+          href: 'https://www.facebook.com/share/1DmWcGpRku/'
+        });
       }
 
       // If a block has many links, it's a category box (Result, Admit Card, Syllabus, etc)
