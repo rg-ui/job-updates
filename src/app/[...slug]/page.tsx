@@ -94,8 +94,12 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/About Author\s*:\s*Sanjay Singh/gi, 'About Owner : Manii Gupta')
                                        .replace(/Sanjay Singh has been writing content for the education sector &amp; competitive exams for quite some time now\. He has been in this field of content writing for almost 6 years\. He has obtained a master's degree in English Literature\. Currently contributing as a content writer on jobniti\.in\. He is basically a resident of Uttar Pradesh\./gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
                                        .replace(/Sanjay Singh has been writing content[^<]*/gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
+                                       // Replace Cloudflare obfuscated emails with the actual email
+                                       .replace(/<a[^>]*cdn-cgi\/l\/email-protection[^>]*>\[email protected\]<\/a>/gi, 'mani913529@gmail.com')
+                                       .replace(/<span[^>]*__cf_email__[^>]*>\[email protected\]<\/span>/gi, 'mani913529@gmail.com')
+                                       .replace(/\[email protected\]/gi, 'mani913529@gmail.com')
                                        // Add phone number for queries
-                                       .replace(/(Email:\s*\[email protected\])/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069');
+                                       .replace(/(Email:\s*mani913529@gmail\.com)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069');
     }
 
     const result = { title, description, mainContentHtml };
