@@ -6,13 +6,13 @@ export default function SeoContent() {
       
       {/* Block 1 */}
       <section className="glass-card">
-        <h2 className="glass-title">🚀 Jobniti - Your Trusted Source for Latest Govt Jobs</h2>
+        <h1 className="glass-title">🚀 Jobniti - Your Trusted Source for Latest Govt Jobs</h1>
         <div className="glass-body">
           <p>
-            Welcome to <strong>Jobniti</strong>, India's most dependable and lightning-fast platform for all Sarkari Naukri, latest Govt Job announcements, Admit Cards, Sarkari Results, Answer Keys, Syllabus, and Admissions updates.
+            Welcome to <strong>Jobniti</strong>, India's most dependable and lightning-fast platform for <strong>Sarkari Result 2026</strong>, <strong>latest Govt Jobs</strong>, <strong>Admit card updates</strong>, Answer Keys, Syllabus, and Admissions updates. 
           </p>
           <p>
-            We bring you prompt, accurate, and real-time information sourced directly from official government portals. Whether you're preparing for <strong>SSC, UPSC, Railways, Police, Defence, Banking, Teaching</strong>, or any State Government Job, we ensure you never miss an important update.
+            We bring you prompt, accurate, and real-time information sourced directly from official government portals. Whether you're preparing for <strong>SSC, UPSC, Railways, Police, Defence, Banking, Teaching</strong>, or looking for the fastest <strong>Sarkari Naukri</strong> and <strong>Sarkari Result 2026</strong> notifications, we ensure you never miss an important update.
           </p>
           <div style={{ marginTop: '20px' }}>
             <span className="modern-badge">🔥 Govt Job Notifications</span>
