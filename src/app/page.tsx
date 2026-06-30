@@ -3,10 +3,8 @@ import AdsSidebar from '@/components/AdsSidebar';
 import SeoContent from '@/components/SeoContent';
 import StateJobFilter from '@/components/StateJobFilter';
 import * as cheerio from 'cheerio';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
 import { Metadata } from 'next';
+import { supabase } from '@/lib/supabase';
 
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const revalidate = 60;
@@ -108,17 +106,23 @@ async function fetchSarkariData() {
       }
     });
 
-    // Track link appearance to determine if a link is "newly updated"
-    const linksStatePath = path.join(os.tmpdir(), 'jobniti_links_state.json');
+    // Track link appearance via Supabase for persistent storage
     let knownLinks: Record<string, number> = {};
-    try {
-      if (fs.existsSync(linksStatePath)) {
-        knownLinks = JSON.parse(fs.readFileSync(linksStatePath, 'utf8'));
+    if (supabase) {
+      try {
+        const { data: row } = await supabase
+          .from('app_state')
+          .select('value')
+          .eq('key', 'known_links')
+          .single();
+        if (row?.value) {
+          knownLinks = row.value as Record<string, number>;
+        }
+      } catch (e) {
+        console.warn('Could not read links from Supabase', e);
       }
-    } catch (e) {
-      console.warn('Could not read links state file', e);
     }
-    
+
     const nowTime = Date.now();
     const isFirstRun = Object.keys(knownLinks).length === 0;
     let stateChanged = false;
@@ -135,11 +139,14 @@ async function fetchSarkariData() {
       });
     });
 
-    if (stateChanged) {
+    // Save updated state to Supabase
+    if (stateChanged && supabase) {
       try {
-        fs.writeFileSync(linksStatePath, JSON.stringify(knownLinks));
+        await supabase
+          .from('app_state')
+          .upsert({ key: 'known_links', value: knownLinks }, { onConflict: 'key' });
       } catch (e) {
-        console.warn('Could not write links state', e);
+        console.warn('Could not write links to Supabase', e);
       }
     }
 
