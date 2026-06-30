@@ -108,40 +108,31 @@ async function fetchSarkariData() {
       }
     });
 
-    // Diffing logic for dynamic section sorting
-    const stateFilePath = path.join(os.tmpdir(), 'jobniti_state.json');
-    let previousState: Record<string, { firstLinkHref: string, lastUpdated: number }> = {};
-    
-    try {
-      if (fs.existsSync(stateFilePath)) {
-        previousState = JSON.parse(fs.readFileSync(stateFilePath, 'utf8'));
-      }
-    } catch (e) {
-      console.warn('Could not read state file', e);
-    }
+    // Fixed section order as requested by user
+    const getOrderWeight = (title: string) => {
+      const lowerTitle = title.toLowerCase();
+      if (lowerTitle.includes('result')) return 1;
+      if (lowerTitle.includes('latest job')) return 2;
+      if (lowerTitle.includes('admit card')) return 3;
+      if (lowerTitle.includes('answer key')) return 4;
+      if (lowerTitle.includes('syllabus')) return 5;
+      if (lowerTitle.includes('admission')) return 6;
+      if (lowerTitle.includes('certificate')) return 7;
+      if (lowerTitle.includes('important')) return 8;
+      return 99;
+    };
 
-    const blocksWithTimestamp = blocks.map(block => {
-      const firstLinkHref = block.links[0]?.href || '';
-      let lastUpdated = previousState[block.title]?.lastUpdated || 0;
-      
-      // If this section has a new top link, update its timestamp
-      if (previousState[block.title]?.firstLinkHref !== firstLinkHref) {
-        lastUpdated = Date.now();
-      }
-      
-      previousState[block.title] = { firstLinkHref, lastUpdated };
-      return { ...block, lastUpdated };
-    });
-
-    // Save the new state
-    try {
-      fs.writeFileSync(stateFilePath, JSON.stringify(previousState));
-    } catch (e) {
-      console.warn('Could not write state file', e);
-    }
-
-    // Sort blocks by lastUpdated descending (newly updated sections on top)
-    const sortedBlocks = blocksWithTimestamp.sort((a, b) => b.lastUpdated - a.lastUpdated);
+    // Keep original index for stable sorting of un-weighted items
+    const sortedBlocks = blocks
+      .map((block, index) => ({ ...block, originalIndex: index }))
+      .sort((a, b) => {
+        const weightA = getOrderWeight(a.title);
+        const weightB = getOrderWeight(b.title);
+        if (weightA !== weightB) {
+          return weightA - weightB;
+        }
+        return a.originalIndex - b.originalIndex;
+      });
 
     const result = { blocks: sortedBlocks, topNotices };
     cachedData = result;
