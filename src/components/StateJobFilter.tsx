@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface LinkItem {
   text: string;
   href: string;
+  timestamp?: number;
 }
 
 interface Block {
@@ -29,30 +30,72 @@ const STATE_MAPPINGS: Record<string, string[]> = {
 
 export default function StateJobFilter({ initialBlocks }: StateJobFilterProps) {
   const [activeState, setActiveState] = useState("All India");
+  const [showNewlyUpdated, setShowNewlyUpdated] = useState(false);
 
   // Filtering Logic
-  const filteredBlocks = initialBlocks.map(block => {
-    if (activeState === "All India") return block;
-    
-    const keywords = STATE_MAPPINGS[activeState];
-    const filteredLinks = block.links.filter(link => {
-      const lowerText = link.text.toLowerCase();
-      // Check if any keyword exists in the link text
-      return keywords.some(kw => lowerText.includes(kw));
-    });
+  let filteredBlocks = initialBlocks;
+  
+  if (showNewlyUpdated) {
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    filteredBlocks = initialBlocks.map(block => {
+      const newLinks = block.links.filter(link => link.timestamp && (now - link.timestamp < ONE_DAY));
+      return { ...block, links: newLinks };
+    }).filter(block => block.links.length > 0);
+  } else {
+    filteredBlocks = initialBlocks.map(block => {
+      if (activeState === "All India") return block;
+      
+      const keywords = STATE_MAPPINGS[activeState];
+      const filteredLinks = block.links.filter(link => {
+        const lowerText = link.text.toLowerCase();
+        // Check if any keyword exists in the link text
+        return keywords.some(kw => lowerText.includes(kw));
+      });
 
-    return {
-      ...block,
-      links: filteredLinks
-    };
-  }).filter(block => block.links.length > 0); // Only keep blocks that have at least 1 matching link
+      return {
+        ...block,
+        links: filteredLinks
+      };
+    }).filter(block => block.links.length > 0); // Only keep blocks that have at least 1 matching link
+  }
 
   return (
     <div className="state-filter-section" style={{ marginBottom: '30px' }}>
       
+      {/* Newly Updated Toggle Button */}
+      <div style={{ padding: '0 5px 15px 5px' }}>
+        <button
+          onClick={() => {
+            setShowNewlyUpdated(!showNewlyUpdated);
+            if (!showNewlyUpdated) setActiveState("All India");
+          }}
+          style={{
+            width: '100%',
+            padding: '14px 20px',
+            borderRadius: '16px',
+            background: showNewlyUpdated ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            border: 'none',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          {showNewlyUpdated ? "❌ Show All Updates" : "🔥 Show Today's New Updates"}
+        </button>
+      </div>
+
       {/* State Selector Bar (Apple Style Pill Menu) */}
-      <div 
-        className="state-pill-container"
+      {!showNewlyUpdated && (
+        <div 
+          className="state-pill-container"
         style={{
           display: 'flex',
           overflowX: 'auto',
@@ -104,6 +147,7 @@ export default function StateJobFilter({ initialBlocks }: StateJobFilterProps) {
           </button>
         ))}
       </div>
+      )}
 
       {/* Results Grid with Framer Motion layout animations */}
       <motion.div 

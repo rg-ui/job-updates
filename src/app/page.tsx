@@ -108,6 +108,41 @@ async function fetchSarkariData() {
       }
     });
 
+    // Track link appearance to determine if a link is "newly updated"
+    const linksStatePath = path.join(os.tmpdir(), 'jobniti_links_state.json');
+    let knownLinks: Record<string, number> = {};
+    try {
+      if (fs.existsSync(linksStatePath)) {
+        knownLinks = JSON.parse(fs.readFileSync(linksStatePath, 'utf8'));
+      }
+    } catch (e) {
+      console.warn('Could not read links state file', e);
+    }
+    
+    const nowTime = Date.now();
+    const isFirstRun = Object.keys(knownLinks).length === 0;
+    let stateChanged = false;
+
+    // Apply timestamps to links
+    blocks.forEach(block => {
+      block.links.forEach(link => {
+        const linkKey = `${link.text}|${link.href}`;
+        if (!knownLinks[linkKey]) {
+          knownLinks[linkKey] = isFirstRun ? nowTime - 2 * 24 * 60 * 60 * 1000 : nowTime;
+          stateChanged = true;
+        }
+        (link as any).timestamp = knownLinks[linkKey];
+      });
+    });
+
+    if (stateChanged) {
+      try {
+        fs.writeFileSync(linksStatePath, JSON.stringify(knownLinks));
+      } catch (e) {
+        console.warn('Could not write links state', e);
+      }
+    }
+
     // Fixed section order as requested by user
     const getOrderWeight = (title: string) => {
       const lowerTitle = title.toLowerCase();
