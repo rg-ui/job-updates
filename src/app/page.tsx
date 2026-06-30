@@ -9,6 +9,19 @@ import { supabase } from '@/lib/supabase';
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const revalidate = 60;
 
+function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url, 'https://jobniti.in');
+    const protocol = parsed.protocol.toLowerCase();
+    if (protocol === 'javascript:' || protocol === 'data:' || protocol === 'vbscript:') {
+      return '#';
+    }
+    return url;
+  } catch {
+    return '#';
+  }
+}
+
 let cachedData: { blocks: any[], topNotices: any[] } | null = null;
 let cacheTime = 0;
 const CACHE_TTL = 300 * 1000; // 5 minutes cache
@@ -35,7 +48,7 @@ async function fetchSarkariData() {
     $('.gb-grid-column').each((i, el) => {
       // Find all links in the column
       const rawLinks = $(el).find('a').map((_, a) => {
-        let href = $(a).attr('href') || '#';
+        let href = sanitizeUrl($(a).attr('href') || '#');
         if (href.includes('sarkariresult.com.cm')) {
           href = href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/');
         } else if (href.includes('whatsapp.com')) {
