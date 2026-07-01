@@ -42,7 +42,7 @@ async function fetchSarkariData() {
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    const blocks: { title: string, links: { text: string, href: string }[] }[] = [];
+    const blocks: { title: string, links: { text: string, href: string, isViewMore?: boolean }[] }[] = [];
     const topNotices: { text: string, href: string }[] = [];
 
     $('.gb-grid-column').each((i, el) => {
@@ -62,9 +62,13 @@ async function fetchSarkariData() {
         text = text.replace(/sarkariresult\.com\.cm/gi, 'jobniti.in');
         text = text.replace(/Sarkari Result/gi, 'Jobniti');
 
+        // Detect "View More" button from wp-block-button parent
+        const isViewMore = $(a).closest('.wp-block-button').length > 0 || text.toLowerCase() === 'view more';
+
         return {
           text: text,
-          href: href
+          href: href,
+          isViewMore,
         };
       }).get().filter(l => l.text.length > 3);
 
@@ -100,11 +104,13 @@ async function fetchSarkariData() {
         // Add Social Media Links
         links.push({
           text: 'Jobniti @Instagram',
-          href: 'https://www.instagram.com/jobniti.in?igsh=Mm5oY3J3NHp6N3Zz'
+          href: 'https://www.instagram.com/jobniti.in?igsh=Mm5oY3J3NHp6N3Zz',
+          isViewMore: false,
         });
         links.push({
           text: 'Jobniti @Facebook',
-          href: 'https://www.facebook.com/share/1DmWcGpRku/'
+          href: 'https://www.facebook.com/share/1DmWcGpRku/',
+          isViewMore: false,
         });
       }
 

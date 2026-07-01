@@ -149,6 +149,73 @@ table {
   line-height: 1.4;
 }
 
+/* ===== VIEW MORE BUTTON ===== */
+.category-list li .wp-block-button,
+.category-list li:has(> .wp-block-button) {
+  margin-top: 6px;
+  list-style: none;
+}
+
+.category-list .wp-block-button a,
+.category-list a[href*="/result/"],
+.category-list a[href*="/admit-card/"],
+.category-list a[href*="/latest-jobs/"],
+.category-list a[href*="/answer-key/"],
+.category-list a[href*="/syllabus/"],
+.category-list a[href*="/admission/"] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 20px !important;
+  background: linear-gradient(135deg, #059669, #10b981) !important;
+  color: #fff !important;
+  border-radius: 30px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.3px;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+}
+
+.category-list .wp-block-button a::after,
+.category-list a[href*="/result/"]::after,
+.category-list a[href*="/admit-card/"]::after,
+.category-list a[href*="/latest-jobs/"]::after,
+.category-list a[href*="/answer-key/"]::after,
+.category-list a[href*="/syllabus/"]::after,
+.category-list a[href*="/admission/"]::after {
+  content: "→";
+  font-size: 15px;
+  transition: transform 0.2s ease;
+}
+
+.category-list .wp-block-button a:hover,
+.category-list a[href*="/result/"]:hover,
+.category-list a[href*="/admit-card/"]:hover,
+.category-list a[href*="/latest-jobs/"]:hover,
+.category-list a[href*="/answer-key/"]:hover,
+.category-list a[href*="/syllabus/"]:hover,
+.category-list a[href*="/admission/"]:hover {
+  background: linear-gradient(135deg, #047857, #059669) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px) scale(1.03);
+  color: #fff !important;
+}
+
+.category-list .wp-block-button a:hover::after,
+.category-list a[href*="/result/"]:hover::after,
+.category-list a[href*="/admit-card/"]:hover::after,
+.category-list a[href*="/latest-jobs/"]:hover::after,
+.category-list a[href*="/answer-key/"]:hover::after,
+.category-list a[href*="/syllabus/"]:hover::after,
+.category-list a[href*="/admission/"]:hover::after {
+  transform: translateX(4px);
+}
+
 /* ===== GLASSMORPHISM SEO SECTION ===== */
 .glass-card {
   background: rgba(240, 248, 255, 0.5);
