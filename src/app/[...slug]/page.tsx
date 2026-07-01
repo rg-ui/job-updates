@@ -75,7 +75,7 @@ async function fetchInnerPage(slug: string[]) {
 
         if (href) {
           // If the link is relative and points to wordpress assets/uploads, point it to the source domain
-          if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/') || /\.pdf\??/i.test(href)) {
+          if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/') || (href.startsWith('/') && /\.pdf\??/i.test(href))) {
             href = 'https://sarkariresult.com.cm' + href;
             $(a).attr('href', href);
           }
@@ -90,11 +90,24 @@ async function fetchInnerPage(slug: string[]) {
           } else if (href.includes('sarkariresult.com.cm')) {
             // Keep absolute URLs for static assets and PDFs
             if (href.includes('/wp-content/') || href.includes('/wp-includes/') || /\.pdf\??/i.test(href)) {
-              $(a).attr('href', href);
+              // Protect asset URLs from the global text replace by using a temporary placeholder
+              $(a).attr('href', href.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
             } else {
-              $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/'));
+              $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//gi, '/'));
             }
           }
+        }
+      });
+
+      // Protect image src attributes from global text replace
+      entryContent.find('img').each((_, img) => {
+        let src = $(img).attr('src');
+        if (src) {
+           $(img).attr('src', src.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
+        }
+        let srcset = $(img).attr('srcset');
+        if (srcset) {
+           $(img).attr('srcset', srcset.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
         }
       });
 
@@ -114,7 +127,9 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/\[email\s*protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
                                        .replace(/\[email&nbsp;protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
                                        // Add phone number for queries
-                                       .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069');
+                                       .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069')
+                                       // Restore protected asset domains
+                                       .replace(/SARKARI_ASSETS_DOMAIN/g, 'sarkariresult.com.cm');
     }
 
     const result = { title, description, mainContentHtml };
