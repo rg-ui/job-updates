@@ -74,6 +74,12 @@ async function fetchInnerPage(slug: string[]) {
         }
 
         if (href) {
+          // If the link is relative and points to wordpress assets/uploads, point it to the source domain
+          if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/') || /\.pdf\??/i.test(href)) {
+            href = 'https://sarkariresult.com.cm' + href;
+            $(a).attr('href', href);
+          }
+
           if (href.includes('whatsapp.com')) {
             $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
           } else if (href.includes('t.me') || href.includes('telegram.me')) {
@@ -82,7 +88,12 @@ async function fetchInnerPage(slug: string[]) {
             $(a).attr('href', '/contact/email');
             $(a).text('[email protected]');
           } else if (href.includes('sarkariresult.com.cm')) {
-            $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/'));
+            // Keep absolute URLs for static assets and PDFs
+            if (href.includes('/wp-content/') || href.includes('/wp-includes/') || /\.pdf\??/i.test(href)) {
+              $(a).attr('href', href);
+            } else {
+              $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/'));
+            }
           }
         }
       });
