@@ -78,6 +78,9 @@ async function fetchInnerPage(slug: string[]) {
             $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
           } else if (href.includes('t.me') || href.includes('telegram.me')) {
             $(a).attr('href', 'https://t.me/job1updat8');
+          } else if (href.includes('email-protection')) {
+            $(a).attr('href', '/contact/email');
+            $(a).text('[email protected]');
           } else if (href.includes('sarkariresult.com.cm')) {
             $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/'));
           }
@@ -94,12 +97,13 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/About Author\s*:\s*Sanjay Singh/gi, 'About Owner : Manii Gupta')
                                        .replace(/Sanjay Singh has been writing content for the education sector &amp; competitive exams for quite some time now\. He has been in this field of content writing for almost 6 years\. He has obtained a master's degree in English Literature\. Currently contributing as a content writer on jobniti\.in\. He is basically a resident of Uttar Pradesh\./gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
                                        .replace(/Sanjay Singh has been writing content[^<]*/gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
-                                       // Replace Cloudflare obfuscated emails with the actual email
-                                       .replace(/<a[^>]*cdn-cgi\/l\/email-protection[^>]*>\[email protected\]<\/a>/gi, 'mani913529@gmail.com')
-                                       .replace(/<span[^>]*__cf_email__[^>]*>\[email protected\]<\/span>/gi, 'mani913529@gmail.com')
-                                       .replace(/\[email protected\]/gi, 'mani913529@gmail.com')
+                                       // Replace Cloudflare obfuscated emails with contact directory link
+                                       .replace(/<a[^>]*cdn-cgi\/l\/email-protection[^>]*>.*?<\/a>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                       .replace(/<span[^>]*__cf_email__[^>]*>.*?<\/span>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                       .replace(/\[email\s*protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                       .replace(/\[email&nbsp;protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
                                        // Add phone number for queries
-                                       .replace(/(Email:\s*mani913529@gmail\.com)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069');
+                                       .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069');
     }
 
     const result = { title, description, mainContentHtml };
