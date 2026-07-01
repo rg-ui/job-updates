@@ -21,9 +21,10 @@ export const metadata: Metadata = {
     default: 'Jobniti | Sarkari Result 2026 | Latest Govt Jobs | jobniti.in',
     template: `%s | Jobniti - jobniti.in`,
   },
-  description: 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus, Sarkari Naukri updates. No Ads. Only Updates.',
+  description: 'Jobniti.in - India\'s trusted platform for Sarkari Result 2026, RRB Group D Result 2026, Latest Govt Jobs, Admit Card, Answer Key, Syllabus updates. No Ads. Only Updates.',
   keywords: [
     'jobniti', 'jobniti.in', 'sarkari result', 'sarkari result 2026',
+    'RRB Group D Result 2026', 'Railway Group D Result', 'RRB Group D Cut Off',
     'latest govt jobs', 'sarkari naukri', 'admit card', 'answer key',
     'syllabus', 'government jobs india', 'sarkari result official',
     'latest sarkari jobs', 'result 2026', 'admit card 2026',

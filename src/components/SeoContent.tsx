@@ -14,6 +14,43 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
   return (
     <div className="seo-content-container" style={{ marginTop: '50px', marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
       
+      {/* Railway RRB Group D Result 2026 High Ranking SEO Section */}
+      <section className="glass-card" style={{ border: '2px solid rgba(16, 185, 129, 0.4)' }}>
+        <h2 className="glass-title" style={{ background: 'linear-gradient(135deg, #059669, #0A2540)' }}>
+          📢 Railway RRB Group D Result 2026 Out: Region-Wise Merit List & Cut Off Marks
+        </h2>
+        <div className="glass-body">
+          <p>
+            The Railway Recruitment Board (RRB) has officially announced the highly anticipated <strong>RRB Group D Result 2026</strong>. Candidates who appeared for the Computer Based Test (CBT) can now download their scorecard, check the official cut-off marks, and view the region-wise merit list directly from the links provided below.
+          </p>
+          <p>
+            The recruitment drive aims to fill thousands of vacancies in track maintainers, helper/assistant, and other technical departments. Keep your registration details ready to fetch your result immediately.
+          </p>
+          
+          <div style={{ margin: '20px 0', padding: '15px', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '12px', borderLeft: '4px solid #10b981' }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#0A2540', fontSize: '16px', fontWeight: '700' }}>⚡ Quick Steps to Check RRB Group D Result 2026</h3>
+            <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '14.5px', lineHeight: '1.6' }}>
+              <li>Go to the main results section on the homepage and click on <a href="/railway-rrb-group-d-2026-chk-now/" style={{ color: '#059669', fontWeight: '700', textDecoration: 'underline' }}>Railway RRB Group D Result 2026 Link</a>.</li>
+              <li>Select your respective RRB region (e.g., RRB Allahabad, RRB Patna, RRB Mumbai, etc.).</li>
+              <li>Open the PDF file of selected candidates and search for your Roll Number or Registration ID using Ctrl+F.</li>
+              <li>Download the official RRB Group D Cut-off score sheet to check qualification status for the Physical Efficiency Test (PET).</li>
+            </ol>
+          </div>
+
+          <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0A2540', marginBottom: '10px' }}>🌐 Official RRB Region-Wise Result Portals:</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', fontSize: '13px' }}>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Allahabad Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Patna Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Mumbai Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Secunderabad Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bhopal Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Chandigarh Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Kolkata Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bangalore Group D</a></div>
+          </div>
+        </div>
+      </section>
+
       {/* Block 1 */}
       <section className="glass-card">
         <h1 className="glass-title">{dynamicHeading}</h1>
