@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 // Daily motivational quotes - changes automatically every day based on date
 const QUOTES = [
@@ -191,13 +192,14 @@ export default function JobUpdatesHeader() {
           {/* Logo + Name */}
           <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
             <div style={{ position: 'relative', animation: 'float 5s ease-in-out infinite', flexShrink: 0 }}>
-              <img
+              <Image
                 src="/jobniti-logo.png"
                 alt="Jobniti Logo"
                 className="header-logo-img"
+                width={100}
+                height={100}
+                priority
                 style={{
-                  width: '100px',
-                  height: '100px',
                   objectFit: 'cover',
                   background: 'rgba(255,255,255,0.95)',
                   padding: '10px',

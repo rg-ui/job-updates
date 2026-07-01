@@ -167,18 +167,55 @@ export default async function InnerPage(props: { params: Promise<{ slug: string[
       </div>
 
       <style dangerouslySetInnerHTML={{__html: `
-        .parsed-content { max-width: 100%; overflow-x: auto; }
-        .parsed-content img { max-width: 100%; height: auto; }
-        .parsed-content table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000; text-align: center; }
-        .parsed-content th, .parsed-content td { border: 1px solid #000; padding: 10px; }
-        .parsed-content th { background-color: #f5f5f5; font-weight: bold; }
-        .parsed-content tr:nth-child(even) { background-color: #f9f9f9; }
-        .parsed-content a { color: #0000c0; text-decoration: none; font-weight: bold; }
-        .parsed-content a:hover { color: #e10101; text-decoration: underline; }
-        .parsed-content h1, .parsed-content h2, .parsed-content h3 { color: #cd0808; text-align: center; margin-top: 15px; margin-bottom: 15px; }
-        .parsed-content p { text-align: center; margin-bottom: 10px; }
-        .parsed-content ul { list-style: inside; text-align: left; margin: 10px 0; }
-        .parsed-content li { margin-bottom: 5px; }
+        .parsed-content { 
+          max-width: 100%; 
+          overflow-x: auto; 
+          font-size: 15px; 
+          line-height: 1.6;
+          color: #333;
+        }
+        .parsed-content img { max-width: 100%; height: auto; border-radius: 8px; }
+        .parsed-content table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          margin: 20px 0; 
+          border: 1px solid #e2e8f0; 
+          text-align: center;
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+        .parsed-content th, .parsed-content td { 
+          border: 1px solid #e8edf2; 
+          padding: 12px 14px; 
+          vertical-align: middle;
+        }
+        .parsed-content th { 
+          background: linear-gradient(135deg, #0A2540 0%, #004D40 100%); 
+          color: #ffffff; 
+          font-weight: 700; 
+          text-transform: uppercase;
+          font-size: 13px;
+          letter-spacing: 0.5px;
+        }
+        .parsed-content tr:nth-child(even) { background-color: #f8fafc; }
+        .parsed-content tr:hover { background-color: #f1f5f9; }
+        .parsed-content a { color: #059669; text-decoration: none; font-weight: bold; transition: color 0.2s ease; }
+        .parsed-content a:hover { color: #047857; text-decoration: underline; }
+        .parsed-content h1, .parsed-content h2, .parsed-content h3 { 
+          color: #0A2540; 
+          text-align: center; 
+          margin-top: 25px; 
+          margin-bottom: 15px; 
+          font-weight: 800;
+        }
+        .parsed-content h1 { font-size: 24px; border-bottom: 2px solid rgba(16, 185, 129, 0.15); padding-bottom: 8px; }
+        .parsed-content h2 { font-size: 20px; }
+        .parsed-content h3 { font-size: 18px; }
+        .parsed-content p { text-align: center; margin-bottom: 12px; }
+        .parsed-content ul { list-style: inside; text-align: left; margin: 15px 0; padding-left: 10px; }
+        .parsed-content li { margin-bottom: 8px; }
       `}} />
     </div>
   );
