@@ -3,14 +3,21 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 
 const navLinks = [
-  { label: '🏠 Home', href: '/' },
-  { label: '💼 Latest Job', href: '/latest-jobs' },
-  { label: '📋 Admit Card', href: '/admit-card' },
-  { label: '🏆 Result', href: '/result' },
-  { label: '🎓 Admission', href: '/admission' },
-  { label: '📚 Syllabus', href: '/syllabus' },
-  { label: '🗝️ Answer Key', href: '/answer-key' },
-  { label: '📞 Contact Us', href: '/contact' },
+  { label: 'Home', href: '/' },
+  { label: 'Latest Job', href: '/latest-jobs' },
+  { label: 'Admit Card', href: '/admit-card' },
+  { label: 'Result', href: '/result' },
+  { label: 'Admission', href: '/admission' },
+  { label: 'Syllabus', href: '/syllabus' },
+  { label: 'Answer Key', href: '/answer-key' },
+  { label: 'Contact Us', href: '/contact' },
+];
+
+const complianceLinks = [
+  { label: 'About', href: '/about' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms', href: '/terms' },
+  { label: 'Disclaimer', href: '/disclaimer' },
 ];
 
 export default function JobUpdatesNav() {
@@ -88,6 +95,20 @@ export default function JobUpdatesNav() {
               </Link>
             </li>
           ))}
+          <li style={{ marginLeft: 'auto' }}>
+            <span style={{ display: 'flex', gap: 0 }}>
+              {complianceLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="nav-link-item"
+                  style={{ fontSize: '12px', padding: '11px 10px', opacity: 0.85 }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </span>
+          </li>
         </ul>
       </div>
 
@@ -122,6 +143,19 @@ export default function JobUpdatesNav() {
             {link.label}
           </Link>
         ))}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '4px', paddingTop: '4px' }}>
+          {complianceLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className="nav-link-item"
+              style={{ fontSize: '12px', opacity: 0.8 }}
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </nav>
   );

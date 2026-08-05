@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import JobUpdatesHeader from '@/components/JobUpdatesHeader';
 import JobUpdatesNav from '@/components/JobUpdatesNav';
 import AdsFooter from '@/components/AdsFooter';
+import Link from 'next/link';
 import { Open_Sans } from 'next/font/google';
 
 const openSans = Open_Sans({
@@ -196,6 +197,13 @@ export default function RootLayout({
         <footer className="bg-darkblue text-white" style={{ padding: '20px', textAlign: 'center' }}>
           <div className="grid-container">
             <AdsFooter />
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px', margin: '12px 0 16px', fontSize: '13px' }}>
+              <Link href="/about" style={{ color: '#87CEEB', textDecoration: 'none' }}>About Us</Link>
+              <Link href="/privacy-policy" style={{ color: '#87CEEB', textDecoration: 'none' }}>Privacy Policy</Link>
+              <Link href="/terms" style={{ color: '#87CEEB', textDecoration: 'none' }}>Terms &amp; Conditions</Link>
+              <Link href="/disclaimer" style={{ color: '#87CEEB', textDecoration: 'none' }}>Disclaimer</Link>
+              <Link href="/contact" style={{ color: '#87CEEB', textDecoration: 'none' }}>Contact Us</Link>
+            </div>
             <p style={{ margin: 0, fontSize: '15px' }}>
               © 2026 jobniti.in - All rights reserved.
             </p>
