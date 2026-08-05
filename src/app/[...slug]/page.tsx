@@ -151,25 +151,6 @@ export async function generateMetadata(props: { params: Promise<{ slug: string[]
   }
 }
 
-function extractJobKeywords(title: string, description: string, content: string): string[] {
-  const combined = `${title} ${description} ${content}`.toLowerCase();
-  const keywords: string[] = [];
-  const patterns = [
-    /government jobs?/i, /sarkari naukri/i, /govt jobs?/i,
-    /recruitment/i, /vacancy/i, /vacancies/i,
-    /eligibility/i, /qualification/i, /age limit/i,
-    /salary/i, /pay scale/i, /application fee/i,
-    /last date/i, /apply online/i, /online form/i,
-    /admit card/i, /exam date/i, /result/i,
-    /interview/i, /document verification/i,
-    /important dates/i, /selection process/i,
-  ];
-  patterns.forEach(p => {
-    if (p.test(combined)) keywords.push(p.source.replace(/[\\\/]/g, '').replace(/i$/, ''));
-  });
-  return [...new Set(keywords)].slice(0, 12);
-}
-
 function buildJobPostingJsonLd(title: string, description: string, slug: string[]) {
   const pageUrl = `${SITE_URL}/${slug.join('/')}`;
   const hiringOrg = title.match(/(?:for|at|in)\s+(.+?)(?:\s+(?:recruitment|vacancy|20\d{2}|notification))/i)?.[1] || 'Government of India';
