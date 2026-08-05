@@ -104,6 +104,7 @@ export const metadata: Metadata = {
 };
 
 import Script from 'next/script';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function RootLayout({
   children,
@@ -189,6 +190,22 @@ export default function RootLayout({
       </head>
       <body className={openSans.className}>
         <Analytics />
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(
+                  function(registration) {
+                    console.log('SW registered:', registration.scope);
+                  },
+                  function(err) {
+                    console.log('SW registration failed:', err);
+                  }
+                );
+              });
+            }
+          `}
+        </Script>
         <JobUpdatesHeader />
         <JobUpdatesNav />
         <main style={{ minHeight: '80vh', padding: '20px 0' }}>
@@ -215,6 +232,16 @@ export default function RootLayout({
             </p>
           </div>
         </footer>
+
+        {/* Floating Notification Bell */}
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 9999,
+        }}>
+          <NotificationBell />
+        </div>
       </body>
     </html>
   );

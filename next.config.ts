@@ -7,6 +7,7 @@ const csp = [
   `font-src 'self' https://fonts.gstatic.com data:`,
   `img-src 'self' data:`,
   `connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com`,
+  `worker-src 'self'`,
   `frame-src 'none'`,
   `form-action 'self'`,
   `base-uri 'self'`,
