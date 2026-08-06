@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { createClient } from '@supabase/supabase-js';
+import webpush from 'web-push';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   if (!url || !key) return null;
   return createClient(url, key);
+}
+
+// Configure web-push VAPID
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
+const VAPID_EMAIL = process.env.VAPID_EMAIL || 'mailto:support@jobniti.in';
+
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(VAPID_EMAIL, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 }
 
 function sanitizeUrl(url: string): string {
@@ -27,13 +37,11 @@ function toISTDateString(tsMs: number): string {
 }
 
 // Fetch only the <head> of a page to extract article:published_time meta tag
-// We send a regular GET but only read enough bytes to find the meta tag (fast)
 async function getPostDateIST(href: string): Promise<string | null> {
   try {
     const baseUrl = 'https://sarkariresult.com.cm';
     const fullUrl = href.startsWith('http') ? href : `${baseUrl}${href}`;
 
-    // Only internal sarkariresult pages have a post date
     if (!fullUrl.includes('sarkariresult.com.cm') && !href.startsWith('/')) {
       return null;
     }
@@ -47,33 +55,29 @@ async function getPostDateIST(href: string): Promise<string | null> {
 
     if (!res.ok) return null;
 
-    // Read in chunks and stop early once we find the meta tag
     const reader = res.body?.getReader();
     if (!reader) return null;
 
     let accumulated = '';
     const decoder = new TextDecoder();
-    const MAX_BYTES = 6000; // <head> is usually within first 6KB
+    const MAX_BYTES = 6000;
 
     while (accumulated.length < MAX_BYTES) {
       const { done, value } = await reader.read();
       if (done) break;
       accumulated += decoder.decode(value, { stream: true });
-
-      // Once we have </head> we can stop reading
       if (accumulated.includes('</head>')) {
         reader.cancel();
         break;
       }
     }
 
-    // Extract article:published_time
     const match = accumulated.match(/article:published_time[^>]*content="([^"]+)"/);
     if (!match) return null;
 
-    const publishedTime = match[1]; // e.g. "2026-07-01T04:47:56+00:00"
+    const publishedTime = match[1];
     const tsMs = new Date(publishedTime).getTime();
-    return toISTDateString(tsMs); // e.g. "2026-07-01"
+    return toISTDateString(tsMs);
   } catch {
     return null;
   }
@@ -99,9 +103,91 @@ async function pLimit<T>(
   return results;
 }
 
+// Send push notification to all subscribers
+async function sendPushNotifications(
+  posts: { text: string; href: string }[],
+  supabase: ReturnType<typeof getSupabase>
+): Promise<{ sent: number; total: number; errors: number }> {
+  if (!supabase || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    return { sent: 0, total: 0, errors: 0 };
+  }
+
+  // Fetch all subscriptions
+  const { data: subscriptions, error: subError } = await supabase
+    .from('push_subscriptions')
+    .select('endpoint, p256dh, auth');
+
+  if (subError || !subscriptions || subscriptions.length === 0) {
+    return { sent: 0, total: 0, errors: 0 };
+  }
+
+  // Build notification content
+  const postCount = posts.length;
+  let title = '';
+  let body = '';
+  let url = '/';
+
+  if (postCount === 1) {
+    title = 'New Job Update';
+    body = posts[0].text;
+    url = posts[0].href;
+  } else if (postCount <= 3) {
+    title = `${postCount} New Updates Today`;
+    body = posts.map(p => p.text).join(' | ');
+    url = '/';
+  } else {
+    title = `${postCount} New Updates Today`;
+    body = `Latest: ${posts[0].text} and ${postCount - 1} more. Check now!`;
+    url = '/';
+  }
+
+  const payload = JSON.stringify({
+    title,
+    body,
+    url,
+    tag: 'jobniti-new-update',
+    icon: '/jobniti-favicon.png',
+    badge: '/jobniti-favicon-48.png',
+  });
+
+  let sentCount = 0;
+  let errorCount = 0;
+  let failedEndpoints: string[] = [];
+
+  const sendPromises = subscriptions.map(async (sub) => {
+    try {
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: {
+          p256dh: sub.p256dh,
+          auth: sub.auth,
+        },
+      };
+      await webpush.sendNotification(pushSubscription, payload);
+      sentCount++;
+    } catch (err: any) {
+      errorCount++;
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        failedEndpoints.push(sub.endpoint);
+      }
+    }
+  });
+
+  await Promise.allSettled(sendPromises);
+
+  // Clean up expired subscriptions
+  if (failedEndpoints.length > 0) {
+    await supabase
+      .from('push_subscriptions')
+      .delete()
+      .in('endpoint', failedEndpoints);
+  }
+
+  return { sent: sentCount, total: subscriptions.length, errors: errorCount };
+}
+
 export async function GET() {
   try {
-    // Today's date in IST
     const todayIST = toISTDateString(Date.now());
 
     // 1. Fetch fresh listing from source
@@ -136,7 +222,6 @@ export async function GET() {
       $(el).find('a').each((_, a) => {
         let href = sanitizeUrl($(a).attr('href') || '#');
 
-        // Rewrite external social links
         if (href.includes('whatsapp.com')) href = 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0';
         else if (href.includes('t.me') || href.includes('telegram.me')) href = 'https://t.me/job1updat8';
         else if (href.includes('sarkariresult.com.cm')) {
@@ -147,7 +232,6 @@ export async function GET() {
           .replace(/sarkariresult\.com\.cm/gi, 'jobniti.in')
           .replace(/Sarkari Result/gi, 'Jobniti');
 
-        // Only keep meaningful internal links, skip duplicates
         if (text.length > 3 && href.startsWith('/') && !seenHrefs.has(href)) {
           seenHrefs.add(href);
           allLinks.push({ text, href, blockTitle: title });
@@ -187,7 +271,7 @@ export async function GET() {
         cachedDateMap[link.href] = dates[i];
       });
 
-      // Save updated cache to Supabase (only for today's cache key)
+      // Save updated cache to Supabase
       if (supabase) {
         try {
           await supabase
@@ -213,6 +297,48 @@ export async function GET() {
 
     const blocks = Object.entries(groupedBlocks).map(([title, links]) => ({ title, links }));
 
+    // 8. AUTO NOTIFICATION: Check for new posts and send push notifications
+    let notificationResult = { sent: 0, total: 0, errors: 0, newPosts: 0 };
+
+    if (supabase && todayLinks.length > 0) {
+      try {
+        // Get already notified links from cache
+        const notifiedKey = `notified_links_${todayIST}`;
+        let alreadyNotified: string[] = [];
+
+        const { data: notifiedRow } = await supabase
+          .from('app_state')
+          .select('value')
+          .eq('key', notifiedKey)
+          .single();
+
+        if (notifiedRow?.value) {
+          alreadyNotified = notifiedRow.value as string[];
+        }
+
+        // Find NEW links that haven't been notified yet
+        const todayHrefs = todayLinks.map(l => l.href);
+        const newHrefs = todayHrefs.filter(href => !alreadyNotified.includes(href));
+
+        if (newHrefs.length > 0) {
+          // Get full link objects for new posts
+          const newPosts = todayLinks.filter(l => newHrefs.includes(l.href));
+
+          // Send push notifications for new posts
+          const pushResult = await sendPushNotifications(newPosts, supabase);
+          notificationResult = { ...pushResult, newPosts: newHrefs.length };
+
+          // Update the notified list
+          const updatedNotified = [...alreadyNotified, ...newHrefs].slice(-200); // keep last 200
+          await supabase
+            .from('app_state')
+            .upsert({ key: notifiedKey, value: updatedNotified }, { onConflict: 'key' });
+        }
+      } catch (err) {
+        console.error('Auto-notification error:', err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       todayIST,
@@ -221,6 +347,7 @@ export async function GET() {
       totalTodayLinks: todayLinks.length,
       blocks,
       supabaseConnected: !!supabase,
+      notifications: notificationResult,
     });
   } catch (error) {
     console.error('today-updates API error:', error);
