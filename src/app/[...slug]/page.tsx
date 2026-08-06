@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchUpstream } from '@/lib/upstream';
 
+// Tell Vercel to allow up to 30 seconds for this serverless function
+export const maxDuration = 30;
 export const revalidate = 60;
 
 const SITE_URL = 'https://jobniti.in';

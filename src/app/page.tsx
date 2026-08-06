@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchUpstream } from '@/lib/upstream';
 
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
+export const maxDuration = 30;
 export const revalidate = 60;
 
 function sanitizeUrl(url: string): string {

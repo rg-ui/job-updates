@@ -10,12 +10,12 @@ try {
 
 interface FetchUpstreamOptions {
   revalidate?: number | false;
-  retries?: number;
-  /** Per-attempt timeout in ms. Default 12000 (safe for Vercel's 25s limit) */
+  /** Per-attempt timeout in ms. Default 15000 (safe for Vercel's 30s limit) */
   timeoutMs?: number;
 }
 
-const UPSTREAM_BASE = 'https://sarkariresult.com.cm';
+const UPSTREAM_HOST = 'sarkariresult.com.cm';
+const UPSTREAM_BASE = `https://${UPSTREAM_HOST}`;
 
 const BROWSER_HEADERS = {
   'User-Agent':
@@ -25,24 +25,29 @@ const BROWSER_HEADERS = {
   'Accept-Language': 'en-US,en;q=0.9',
   'Cache-Control': 'no-cache',
   Pragma: 'no-cache',
+  Connection: 'keep-alive',
 };
 
 /**
  * Attempt a single fetch with timeout. Returns null on failure (does NOT throw).
+ * Returns '' on definitive 404.
  */
 async function tryFetch(
   url: string,
-  fetchOptions: RequestInit & { next?: { revalidate?: number | false } },
+  extra: { next?: { revalidate?: number | false } },
   timeoutMs: number
 ): Promise<string | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { ...fetchOptions, signal: controller.signal });
+    const res = await fetch(url, {
+      headers: BROWSER_HEADERS,
+      signal: controller.signal,
+      ...extra,
+    });
     clearTimeout(timer);
     if (res.ok) return await res.text();
-    // On 404 don't retry — return empty string to signal "not found"
-    if (res.status === 404) return '';
+    if (res.status === 404) return ''; // definitive not-found
     console.warn(`[upstream] ${url} responded ${res.status}`);
     return null;
   } catch (err: unknown) {
@@ -54,51 +59,43 @@ async function tryFetch(
 }
 
 /**
- * Fetch HTML from the upstream source with browser-like headers, retry logic,
- * and support for both trailing-slash and non-trailing-slash URLs.
+ * Fetch HTML from the upstream source with browser-like headers and retry logic.
+ *
+ * Tries URLs in this order per attempt:
+ *  1. No trailing slash  (faster, avoids IPv6 redirect)
+ *  2. With trailing slash
  *
  * Returns:
- *   - string (HTML content) on success
- *   - '' (empty string) if the page definitively 404s
- *   - null if all attempts failed (network/timeout)
+ *  - HTML string on success
+ *  - null if all attempts failed (caller shows fallback UI)
  */
 export async function fetchUpstream(
   urlPath: string,
   options: FetchUpstreamOptions = {}
 ): Promise<string | null> {
-  const { revalidate = 60, retries = 1, timeoutMs = 12000 } = options;
+  const { revalidate = 60, timeoutMs = 15000 } = options;
 
   const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
-
-  // Try without trailing slash first — more reliably resolves on Cloudflare
-  // then with trailing slash, then root
   const urlsToTry: string[] = cleanPath
     ? [
+        // No trailing slash first — resolves faster on Cloudflare IPv4
         `${UPSTREAM_BASE}/${cleanPath}`,
         `${UPSTREAM_BASE}/${cleanPath}/`,
       ]
     : [`${UPSTREAM_BASE}/`];
 
-  const fetchOptions: RequestInit & { next?: { revalidate?: number | false } } = {
-    headers: BROWSER_HEADERS,
-  };
-  if (revalidate !== undefined) {
-    fetchOptions.next = { revalidate };
-  }
+  const nextOption = revalidate !== undefined ? { next: { revalidate } } : {};
 
-  for (const url of urlsToTry) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      if (attempt > 0) {
-        await new Promise((r) => setTimeout(r, 500 * attempt));
-      }
-      const result = await tryFetch(url, fetchOptions, timeoutMs);
-      if (result === '') {
-        // Definitive 404 — no point retrying other URLs either
-        return null;
-      }
-      if (result !== null) {
-        return result;
-      }
+  // Two outer rounds: first quick pass, then slower retry if all fail
+  for (let round = 0; round < 2; round++) {
+    for (const url of urlsToTry) {
+      const result = await tryFetch(url, nextOption, timeoutMs);
+      if (result === '') return null; // definitive 404
+      if (result !== null) return result;
+    }
+    if (round === 0) {
+      // Brief pause before retry round
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
 

@@ -1,15 +1,15 @@
 {
   "functions": {
-    "src/app/[...slug]/page.tsx": {
+    "app/[...slug]/page": {
       "maxDuration": 30
     },
-    "src/app/page.tsx": {
+    "app/page": {
       "maxDuration": 30
     },
-    "src/app/api/today-updates/route.ts": {
+    "app/api/today-updates/route": {
       "maxDuration": 30
     },
-    "src/app/api/cron/notify/route.ts": {
+    "app/api/cron/notify/route": {
       "maxDuration": 60
     }
   }
