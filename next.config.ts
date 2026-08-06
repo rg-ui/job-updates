@@ -15,6 +15,10 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Opt cheerio and dompurify out of bundling so they use native Node.js require
+  // This prevents issues on Vercel serverless where bundled cheerio can fail
+  serverExternalPackages: ['cheerio', 'isomorphic-dompurify'],
+
   async headers() {
     return [
       {
