@@ -3,6 +3,50 @@
 import React, { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
+function BellOffIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      <path d="M18.63 13A17.89 17.89 0 0 1 18 8" />
+      <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14" />
+      <path d="M18 8a6 6 0 0 0-9.33-5" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function LoaderIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+      <line x1="12" y1="2" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="22" />
+      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+      <line x1="2" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="22" y2="12" />
+      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+    </svg>
+  );
+}
+
 export default function NotificationBell() {
   const { isSupported, isSubscribed, permission, isLoading, subscribe, unsubscribe } = usePushNotifications();
   const [showTooltip, setShowTooltip] = useState(false);
@@ -36,105 +80,169 @@ export default function NotificationBell() {
     }
   };
 
+  const getStateClass = () => {
+    if (isLoading) return 'notif-bell-btn loading';
+    if (permission === 'denied') return 'notif-bell-btn denied';
+    if (isSubscribed) return 'notif-bell-btn active';
+    return 'notif-bell-btn';
+  };
+
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
       <style dangerouslySetInnerHTML={{__html: `
         .notif-bell-btn {
           position: relative;
-          background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
-          border: 1px solid rgba(255,255,255,0.2);
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
-          width: 38px;
-          height: 38px;
+          border: none;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 18px;
-          color: white;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           flex-shrink: 0;
+          outline: none;
+          background: linear-gradient(135deg, #1e293b, #334155);
+          color: #e2e8f0;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
         }
         .notif-bell-btn:hover {
-          background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1));
-          transform: scale(1.08);
+          transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .notif-bell-btn:active {
+          transform: scale(0.95);
         }
         .notif-bell-btn.active {
-          background: linear-gradient(135deg, #16a34a, #22c55e);
-          border-color: #22c55e;
-          box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+          background: linear-gradient(135deg, #059669, #10b981);
+          color: white;
+          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .notif-bell-btn.active:hover {
+          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
         }
         .notif-bell-btn.denied {
-          background: linear-gradient(135deg, #dc2626, #ef4444);
-          border-color: #ef4444;
-          opacity: 0.7;
+          background: linear-gradient(135deg, #991b1b, #dc2626);
+          color: white;
+          opacity: 0.85;
+          box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
         }
-        .bell-pulse {
+        .notif-bell-btn.loading {
+          background: linear-gradient(135deg, #1e293b, #334155);
+          color: #94a3b8;
+          cursor: wait;
+        }
+        .notif-bell-btn.loading svg {
+          animation: spinIcon 1s linear infinite;
+        }
+        @keyframes spinIcon {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .bell-pulse-dot {
           position: absolute;
-          top: -2px;
-          right: -2px;
-          width: 10px;
-          height: 10px;
-          background: #22c55e;
+          top: 6px;
+          right: 8px;
+          width: 9px;
+          height: 9px;
+          background: #f59e0b;
           border-radius: 50%;
-          border: 2px solid #05055f;
-          animation: bellPulse 2s infinite;
+          border: 2px solid #10b981;
+          animation: dotPulse 2s ease-in-out infinite;
         }
-        @keyframes bellPulse {
+        @keyframes dotPulse {
           0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.4); opacity: 0.6; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        .notif-ring {
+          position: absolute;
+          top: -3px;
+          right: -3px;
+          width: 14px;
+          height: 14px;
+          background: #ef4444;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid white;
+          animation: ringBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .notif-ring svg {
+          width: 8px;
+          height: 8px;
+          color: white;
+        }
+        @keyframes ringBounce {
+          0% { transform: scale(0); }
+          100% { transform: scale(1); }
         }
         .notif-tooltip {
           position: absolute;
-          top: calc(100% + 8px);
+          bottom: calc(100% + 10px);
           right: 0;
           background: white;
           color: #1f2937;
-          padding: 14px 16px;
-          border-radius: 12px;
+          padding: 12px 16px;
+          border-radius: 10px;
           font-size: 13px;
           font-weight: 500;
           box-shadow: 0 10px 40px rgba(0,0,0,0.15);
           white-space: nowrap;
           z-index: 1000;
-          animation: tooltipIn 0.2s ease;
+          animation: tooltipSlide 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           border: 1px solid #e5e7eb;
+          line-height: 1.5;
         }
-        .notif-tooltip::before {
+        .notif-tooltip::after {
           content: '';
           position: absolute;
-          top: -6px;
-          right: 14px;
+          bottom: -6px;
+          right: 16px;
           width: 12px;
           height: 12px;
           background: white;
           border: 1px solid #e5e7eb;
-          border-bottom: none;
-          border-right: none;
+          border-top: none;
+          border-left: none;
           transform: rotate(45deg);
         }
-        @keyframes tooltipIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes tooltipSlide {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
         .notif-tooltip-sub { color: #059669; font-weight: 700; }
         .notif-tooltip-unsub { color: #dc2626; font-weight: 700; }
         .notif-tooltip-denied { color: #dc2626; }
         @media (max-width: 640px) {
-          .notif-bell-btn { width: 34px; height: 34px; font-size: 16px; }
+          .notif-bell-btn { width: 40px; height: 40px; }
+          .notif-bell-btn svg { width: 18px; height: 18px; }
         }
       `}} />
 
       <button
-        className={`notif-bell-btn ${isSubscribed ? 'active' : ''} ${permission === 'denied' ? 'denied' : ''}`}
+        className={getStateClass()}
         onClick={handleClick}
         onMouseEnter={() => !isLoading && setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         aria-label={isSubscribed ? 'Unsubscribe from notifications' : 'Subscribe to notifications'}
         disabled={isLoading}
       >
-        {isLoading ? '⏳' : isSubscribed ? '🔔' : '🔕'}
-        {isSubscribed && <span className="bell-pulse"></span>}
+        {isLoading ? (
+          <LoaderIcon />
+        ) : isSubscribed ? (
+          <BellIcon />
+        ) : permission === 'denied' ? (
+          <BellOffIcon />
+        ) : (
+          <BellIcon />
+        )}
+
+        {isSubscribed && <span className="bell-pulse-dot"></span>}
       </button>
 
-      {showTooltip && !showDeniedMsg && (
+      {showTooltip && !showDeniedMsg && !justSubscribed && (
         <div className="notif-tooltip">
           {isSubscribed ? (
             <span>
@@ -149,12 +257,12 @@ export default function NotificationBell() {
       )}
 
       {justSubscribed && (
-        <div className="notif-tooltip" style={{ color: '#059669', fontWeight: 700 }}>
-          ✓ Alerts enabled!
+        <div className="notif-tooltip" style={{ color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <CheckIcon /> Alerts enabled!
         </div>
       )}
 
-      {showDeniedMsg && (
+      {showDeniedMsg && !justSubscribed && (
         <div className="notif-tooltip notif-tooltip-denied">
           Notifications blocked. Enable in browser settings.
         </div>
