@@ -11,7 +11,6 @@ try {
 
 interface FetchUpstreamOptions {
   revalidate?: number | false;
-  /** Per-attempt timeout in ms. Default 15000 (safe for Vercel's 30s limit) */
   timeoutMs?: number;
 }
 
@@ -35,7 +34,6 @@ const BROWSER_HEADERS = {
  */
 async function tryFetch(
   url: string,
-  extra: { next?: { revalidate?: number | false } },
   timeoutMs: number
 ): Promise<string | null> {
   const controller = new AbortController();
@@ -44,11 +42,11 @@ async function tryFetch(
     const res = await fetch(url, {
       headers: BROWSER_HEADERS,
       signal: controller.signal,
-      ...extra,
+      redirect: 'follow',
     });
     clearTimeout(timer);
     if (res.ok) return await res.text();
-    if (res.status === 404) return ''; // definitive not-found
+    if (res.status === 404) return '';
     console.warn(`[upstream] ${url} responded ${res.status}`);
     return null;
   } catch (err: unknown) {
@@ -83,11 +81,9 @@ export async function fetchUpstream(
       ]
     : [`${UPSTREAM_BASE}/`];
 
-  const nextOption = revalidate !== undefined ? { next: { revalidate } } : {};
-
   for (const url of urlsToTry) {
-    const result = await tryFetch(url, nextOption, timeoutMs);
-    if (result === '') return null; // definitive 404
+    const result = await tryFetch(url, timeoutMs);
+    if (result === '') return null;
     if (result !== null) return result;
   }
 
