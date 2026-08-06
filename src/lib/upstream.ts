@@ -1,19 +1,3 @@
-// Force IPv4-first DNS resolution to avoid Cloudflare IPv6 timeouts
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const dns = require('node:dns') as typeof import('node:dns');
-  if (dns && typeof dns.setDefaultResultOrder === 'function') {
-    dns.setDefaultResultOrder('ipv4first');
-  }
-} catch {
-  // Ignore if unsupported (edge runtimes, etc.)
-}
-
-interface FetchUpstreamOptions {
-  revalidate?: number | false;
-  timeoutMs?: number;
-}
-
 const UPSTREAM_HOST = 'sarkariresult.com.cm';
 const UPSTREAM_BASE = `https://${UPSTREAM_HOST}`;
 
@@ -23,21 +7,22 @@ const BROWSER_HEADERS = {
   Accept:
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
-  'Cache-Control': 'no-cache',
-  Pragma: 'no-cache',
-  Connection: 'keep-alive',
 };
 
-/**
- * Attempt a single fetch with timeout. Returns null on failure (does NOT throw).
- * Returns '' on definitive 404.
- */
-async function tryFetch(
-  url: string,
-  timeoutMs: number
+export async function fetchUpstream(
+  urlPath: string,
+  options: { revalidate?: number | false; timeoutMs?: number } = {}
 ): Promise<string | null> {
+  const { timeoutMs = 8000 } = options;
+
+  const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
+  const url = cleanPath
+    ? `${UPSTREAM_BASE}/${cleanPath}/`
+    : `${UPSTREAM_BASE}/`;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const res = await fetch(url, {
       headers: BROWSER_HEADERS,
@@ -45,8 +30,8 @@ async function tryFetch(
       redirect: 'follow',
     });
     clearTimeout(timer);
+
     if (res.ok) return await res.text();
-    if (res.status === 404) return '';
     console.warn(`[upstream] ${url} responded ${res.status}`);
     return null;
   } catch (err: unknown) {
@@ -55,37 +40,4 @@ async function tryFetch(
     console.warn(`[upstream] ${url} failed: ${msg}`);
     return null;
   }
-}
-
-/**
- * Fetch HTML from the upstream source with browser-like headers and retry logic.
- *
- * Tries URLs in this order per attempt:
- *  1. No trailing slash  (faster, avoids IPv6 redirect)
- *  2. With trailing slash
- *
- * Returns:
- *  - HTML string on success
- *  - null if all attempts failed (caller shows fallback UI)
- */
-export async function fetchUpstream(
-  urlPath: string,
-  options: FetchUpstreamOptions = {}
-): Promise<string | null> {
-  const { revalidate = 60, timeoutMs = 8000 } = options;
-
-  const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
-  const urlsToTry: string[] = cleanPath
-    ? [
-        `${UPSTREAM_BASE}/${cleanPath}/`,
-      ]
-    : [`${UPSTREAM_BASE}/`];
-
-  for (const url of urlsToTry) {
-    const result = await tryFetch(url, timeoutMs);
-    if (result === '') return null;
-    if (result !== null) return result;
-  }
-
-  return null;
 }
