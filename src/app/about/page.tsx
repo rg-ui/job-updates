@@ -43,8 +43,9 @@ export default function AboutPage() {
           </p>
           <ul>
             <li><strong>Manii Gupta</strong> — Founder &amp; Managing Editor. Responsible for platform strategy, content direction, and editorial oversight.</li>
-            <li><strong>Content Writers</strong> — Our team of writers creates original articles on career guidance, exam preparation strategies, and job market insights.</li>
-            <li><strong>Technical Team</strong> — Handles platform maintenance, performance optimization, and data accuracy verification.</li>
+            <li><strong>Ranjeet Kumar</strong> — Head of Growth &amp; Marketing. NIT student driving digital marketing, SEO, and community engagement.</li>
+            <li><strong>Manish Kumar Bharati</strong> — Head of Operations &amp; Research. NIT student leading content verification, data accuracy, and operations.</li>
+            <li><strong>Content Writers</strong> — Our team creates original articles on career guidance, exam preparation strategies, and job market insights.</li>
           </ul>
           <p>
             All editorial content is fact-checked against official government sources before publication. We maintain strict editorial independence from any recruiting organization or political entity.

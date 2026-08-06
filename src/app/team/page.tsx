@@ -32,9 +32,9 @@ const teamMembers = [
     initials: 'RK',
     color: '#059669',
     gradient: 'linear-gradient(135deg, #059669, #10b981)',
-    bio: 'An NIT graduate with a sharp eye for digital growth strategies. Ranjeet leads all marketing initiatives at Jobniti, from SEO and social media to community building across WhatsApp and Telegram channels.',
+    bio: 'An NIT student with a sharp eye for digital growth strategies. Ranjeet leads all marketing initiatives at Jobniti, from SEO and social media to community building across WhatsApp and Telegram channels.',
     highlights: [
-      'NIT alumnus with expertise in digital marketing and growth hacking',
+      'NIT student with expertise in digital marketing and growth hacking',
       'Architected Jobniti\'s social media presence across Instagram, Facebook, WhatsApp & Telegram',
       'Developed SEO strategies that drive organic traffic from across India',
       'Manages community engagement and user acquisition campaigns',
@@ -48,9 +48,9 @@ const teamMembers = [
     initials: 'MB',
     color: '#1e3a8a',
     gradient: 'linear-gradient(135deg, #1e3a8a, #3b82f6)',
-    bio: 'An NIT-trained researcher with exceptional analytical skills. Manish ensures every piece of information on Jobniti is verified, accurate, and presented in the most helpful format for job seekers.',
+    bio: 'An NIT student with exceptional analytical skills. Manish ensures every piece of information on Jobniti is verified, accurate, and presented in the most helpful format for job seekers.',
     highlights: [
-      'NIT alumnus with strong research and analytical background',
+      'NIT student with strong research and analytical background',
       'Leads the content verification workflow — cross-referencing all listings with official sources',
       'Oversees data accuracy, source validation, and content quality standards',
       'Manages the day-to-day operations and content publishing pipeline',
@@ -299,7 +299,7 @@ export default function TeamPage() {
                 </div>
               )}
               <div className="team-badge" style={{ background: member.gradient }}>
-                {member.role.split(' ')[0] === 'Founder' ? 'Founder' : 'NITian'}
+                {member.role.split(' ')[0] === 'Founder' ? 'Founder' : 'NIT Student'}
               </div>
             </div>
 
