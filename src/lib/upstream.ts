@@ -74,30 +74,21 @@ export async function fetchUpstream(
   urlPath: string,
   options: FetchUpstreamOptions = {}
 ): Promise<string | null> {
-  const { revalidate = 60, timeoutMs = 15000 } = options;
+  const { revalidate = 60, timeoutMs = 8000 } = options;
 
   const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
   const urlsToTry: string[] = cleanPath
     ? [
-        // No trailing slash first — resolves faster on Cloudflare IPv4
-        `${UPSTREAM_BASE}/${cleanPath}`,
         `${UPSTREAM_BASE}/${cleanPath}/`,
       ]
     : [`${UPSTREAM_BASE}/`];
 
   const nextOption = revalidate !== undefined ? { next: { revalidate } } : {};
 
-  // Two outer rounds: first quick pass, then slower retry if all fail
-  for (let round = 0; round < 2; round++) {
-    for (const url of urlsToTry) {
-      const result = await tryFetch(url, nextOption, timeoutMs);
-      if (result === '') return null; // definitive 404
-      if (result !== null) return result;
-    }
-    if (round === 0) {
-      // Brief pause before retry round
-      await new Promise((r) => setTimeout(r, 500));
-    }
+  for (const url of urlsToTry) {
+    const result = await tryFetch(url, nextOption, timeoutMs);
+    if (result === '') return null; // definitive 404
+    if (result !== null) return result;
   }
 
   return null;
