@@ -32,21 +32,6 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-function LoaderIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-      <line x1="12" y1="2" x2="12" y2="6" />
-      <line x1="12" y1="18" x2="12" y2="22" />
-      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-      <line x1="2" y1="12" x2="6" y2="12" />
-      <line x1="18" y1="12" x2="22" y2="12" />
-      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
-      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
-    </svg>
-  );
-}
-
 export default function NotificationBell() {
   const { isSupported, isSubscribed, permission, isLoading, subscribe, unsubscribe } = usePushNotifications();
   const [showTooltip, setShowTooltip] = useState(false);
@@ -81,7 +66,6 @@ export default function NotificationBell() {
   };
 
   const getStateClass = () => {
-    if (isLoading) return 'notif-bell-btn loading';
     if (permission === 'denied') return 'notif-bell-btn denied';
     if (isSubscribed) return 'notif-bell-btn active';
     return 'notif-bell-btn';
@@ -127,18 +111,6 @@ export default function NotificationBell() {
           color: white;
           opacity: 0.85;
           box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-        }
-        .notif-bell-btn.loading {
-          background: linear-gradient(135deg, #1e293b, #334155);
-          color: #94a3b8;
-          cursor: wait;
-        }
-        .notif-bell-btn.loading svg {
-          animation: spinIcon 1s linear infinite;
-        }
-        @keyframes spinIcon {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
         }
         .bell-pulse-dot {
           position: absolute;
@@ -229,9 +201,7 @@ export default function NotificationBell() {
         aria-label={isSubscribed ? 'Unsubscribe from notifications' : 'Subscribe to notifications'}
         disabled={isLoading}
       >
-        {isLoading ? (
-          <LoaderIcon />
-        ) : isSubscribed ? (
+        {isSubscribed ? (
           <BellIcon />
         ) : permission === 'denied' ? (
           <BellOffIcon />

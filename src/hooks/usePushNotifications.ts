@@ -56,33 +56,42 @@ export function usePushNotifications() {
         return false;
       }
 
-      const reg = await navigator.serviceWorker.ready;
-      let sub = await reg.pushManager.getSubscription();
-
-      if (!sub) {
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
-      }
-
-      setSubscription(sub);
+      // INSTANT UI update — show green bell immediately
       setIsSubscribed(true);
-
-      // Send subscription to server
-      await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-          keys: {
-            p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('p256dh')!)))),
-            auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('auth')!)))),
-          },
-        }),
-      });
-
       setIsLoading(false);
+
+      // Background: do the heavy lifting silently
+      (async () => {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          let sub = await reg.pushManager.getSubscription();
+
+          if (!sub) {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+          }
+
+          setSubscription(sub);
+
+          // Save to server (fire and forget)
+          fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('p256dh')!)))),
+                auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('auth')!)))),
+              },
+            }),
+          }).catch(() => {});
+        } catch (bgErr) {
+          console.error('Background push setup failed:', bgErr);
+        }
+      })();
+
       return true;
     } catch (err) {
       console.error('Push subscription failed:', err);
@@ -94,23 +103,23 @@ export function usePushNotifications() {
   const unsubscribe = useCallback(async () => {
     if (!subscription) return;
 
-    setIsLoading(true);
-    try {
-      await subscription.unsubscribe();
+    // INSTANT UI update
+    setIsSubscribed(false);
+    setSubscription(null);
 
-      await fetch('/api/push/unsubscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ endpoint: subscription.endpoint }),
-      });
-
-      setSubscription(null);
-      setIsSubscribed(false);
-      setIsLoading(false);
-    } catch (err) {
-      console.error('Push unsubscribe failed:', err);
-      setIsLoading(false);
-    }
+    // Background cleanup
+    (async () => {
+      try {
+        await subscription.unsubscribe();
+        fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        }).catch(() => {});
+      } catch (err) {
+        console.error('Background unsubscribe failed:', err);
+      }
+    })();
   }, [subscription]);
 
   return {
