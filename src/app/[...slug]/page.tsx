@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchUpstream } from '@/lib/upstream';
+import { supabase } from '@/lib/supabase';
 
 let DOMPurify: typeof import('isomorphic-dompurify')['default'] | null = null;
 async function getDOMPurify() {
@@ -20,7 +21,6 @@ export const maxDuration = 30;
 export const revalidate = 60;
 
 const SITE_URL = 'https://jobniti.in';
-const ALLOWED_HOST = 'sarkariresult.com.cm';
 
 // Path traversal protection: only allow alphanumeric, hyphens, slashes
 function sanitizePath(slugParts: string[]): string | null {
@@ -36,10 +36,132 @@ function sanitizePath(slugParts: string[]): string | null {
   return joined;
 }
 
-const innerPagesCache = new Map<string, { data: { title: string, description: string, mainContentHtml: string, slug: string } | null, timestamp: number }>();
+interface PageData { title: string; description: string; mainContentHtml: string; slug: string; }
+
+const innerPagesCache = new Map<string, { data: PageData | null; timestamp: number }>();
 const CACHE_TTL = 300 * 1000;
 
-async function fetchInnerPage(slug: string[]) {
+async function fetchFromSupabase(path: string): Promise<PageData | null> {
+  if (!supabase) return null;
+  try {
+    const { data } = await supabase
+      .from('app_state')
+      .select('value')
+      .eq('key', `slug:${path}`)
+      .single();
+    if (data?.value) return data.value as PageData;
+  } catch {}
+  return null;
+}
+
+async function saveToSupabase(path: string, data: PageData): Promise<void> {
+  if (!supabase) return;
+  try {
+    await supabase
+      .from('app_state')
+      .upsert({ key: `slug:${path}`, value: data }, { onConflict: 'key' });
+  } catch (e) {
+    console.warn('Failed to cache slug in Supabase:', e);
+  }
+}
+
+function processHtml(html: string, path: string): PageData {
+  const $ = cheerio.load(html);
+
+  let title = $('title').text() || 'Jobniti';
+  title = title.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+               .replace(/Sarkari Result/gi, 'Jobniti');
+
+  let description = $('meta[name="description"]').attr('content') || '';
+  description = description.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+                            .replace(/Sarkari Result/gi, 'Jobniti');
+
+  let mainContentHtml = '';
+  const entryContent = $('main.site-main');
+
+  if (entryContent.length > 0) {
+    entryContent.find('ins.adsbygoogle').remove();
+    entryContent.find('.code-block').remove();
+    entryContent.find('script').remove();
+    entryContent.find('style').remove();
+    entryContent.find('iframe').remove();
+
+    entryContent.find('a').each((_, a) => {
+      let href = $(a).attr('href');
+      const text = $(a).text().toLowerCase();
+
+      if (text.includes('app now') || text.includes('mobile app') || text.includes('android app') || text.includes('app download')) {
+        const parent = $(a).parent();
+        if (parent.is('p') && parent.text().trim() === $(a).text().trim()) {
+          parent.remove();
+        } else {
+          $(a).remove();
+        }
+        return;
+      }
+
+      if (href) {
+        if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/') || (href.startsWith('/') && /\.pdf\??/i.test(href))) {
+          href = 'https://sarkariresult.com.cm' + href;
+          $(a).attr('href', href);
+        }
+
+        if (href.includes('whatsapp.com')) {
+          $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
+        } else if (href.includes('t.me') || href.includes('telegram.me')) {
+          $(a).attr('href', 'https://t.me/job1updat8');
+        } else if (href.includes('email-protection')) {
+          $(a).attr('href', '/contact/email');
+          $(a).text('[email protected]');
+        } else if (href.includes('sarkariresult.com.cm')) {
+          if (href.includes('/wp-content/') || href.includes('/wp-includes/') || /\.pdf\??/i.test(href)) {
+            $(a).attr('href', href.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
+          } else {
+            $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//gi, '/'));
+          }
+        }
+      }
+    });
+
+    entryContent.find('img').each((_, img) => {
+      const src = $(img).attr('src');
+      if (src) {
+         $(img).attr('src', src.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
+      }
+      const srcset = $(img).attr('srcset');
+      if (srcset) {
+         $(img).attr('srcset', srcset.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
+      }
+    });
+
+    mainContentHtml = entryContent.html() || '';
+    mainContentHtml = mainContentHtml.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+                                     .replace(/Sarkari Result/gi, 'Jobniti')
+                                     .replace(/SarkariResult/gi, 'Jobniti')
+                                     .replace(/Since 2009/gi, 'Since 2026')
+                                     .replace(/About Author\s*:\s*Sanjay Singh/gi, 'About Owner : Manii Gupta')
+                                     .replace(/Sanjay Singh has been writing content for the education sector &amp; competitive exams for quite some time now\. He has been in this field of content writing for almost 6 years\. He has obtained a master's degree in English Literature\. Currently contributing as a content writer on jobniti\.in\. He is basically a resident of Uttar Pradesh\./gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
+                                     .replace(/Sanjay Singh has been writing content[^<]*/gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
+                                     .replace(/<a[^>]*cdn-cgi\/l\/email-protection[^>]*>.*?<\/a>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                     .replace(/<span[^>]*__cf_email__[^>]*>.*?<\/span>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                     .replace(/\[email\s*protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                     .replace(/\[email&nbsp;protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
+                                     .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069')
+                                     .replace(/SARKARI_ASSETS_DOMAIN/g, 'sarkariresult.com.cm');
+
+    mainContentHtml = DOMPurify!.sanitize(mainContentHtml, {
+      ALLOWED_TAGS: ['a', 'strong', 'em', 'b', 'i', 'u', 'p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img', 'div', 'span',
+        'blockquote', 'pre', 'code', 'sub', 'sup', 'small', 'section', 'article'],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'style', 'class', 'colspan', 'rowspan', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false,
+    });
+  }
+
+  return { title, description, mainContentHtml, slug: path };
+}
+
+async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
   const path = sanitizePath(slug);
   if (!path) return null;
 
@@ -50,121 +172,31 @@ async function fetchInnerPage(slug: string[]) {
     return cached.data;
   }
 
+  // 1. Try in-memory cache
+  // 2. Try Supabase persistent cache
+  const dbData = await fetchFromSupabase(path);
+  if (dbData) {
+    innerPagesCache.set(path, { data: dbData, timestamp: now });
+    return dbData;
+  }
+
+  // 3. Fetch from upstream
   try {
     const html = await fetchUpstream(path, { revalidate: 60 });
     if (!html) {
-      if (cached) {
-        console.warn("Using stale cache for inner page due to network failure");
-        return cached.data;
-      }
-      innerPagesCache.set(path, { data: null, timestamp: Date.now() });
+      innerPagesCache.set(path, { data: null, timestamp: now });
       return null;
     }
 
-    const $ = cheerio.load(html);
-
-    let title = $('title').text() || 'Jobniti';
-    title = title.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
-                 .replace(/Sarkari Result/gi, 'Jobniti');
-
-    let description = $('meta[name="description"]').attr('content') || '';
-    description = description.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
-                             .replace(/Sarkari Result/gi, 'Jobniti');
-
-    let mainContentHtml = '';
-    const entryContent = $('main.site-main');
-    
-    if (entryContent.length > 0) {
-      entryContent.find('ins.adsbygoogle').remove();
-      entryContent.find('.code-block').remove();
-      entryContent.find('script').remove();
-      entryContent.find('style').remove();
-      entryContent.find('iframe').remove();
-      
-      entryContent.find('a').each((_, a) => {
-        let href = $(a).attr('href');
-        const text = $(a).text().toLowerCase();
-
-        if (text.includes('app now') || text.includes('mobile app') || text.includes('android app') || text.includes('app download')) {
-          const parent = $(a).parent();
-          if (parent.is('p') && parent.text().trim() === $(a).text().trim()) {
-            parent.remove();
-          } else {
-            $(a).remove();
-          }
-          return;
-        }
-
-        if (href) {
-          if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/') || (href.startsWith('/') && /\.pdf\??/i.test(href))) {
-            href = 'https://sarkariresult.com.cm' + href;
-            $(a).attr('href', href);
-          }
-
-          if (href.includes('whatsapp.com')) {
-            $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
-          } else if (href.includes('t.me') || href.includes('telegram.me')) {
-            $(a).attr('href', 'https://t.me/job1updat8');
-          } else if (href.includes('email-protection')) {
-            $(a).attr('href', '/contact/email');
-            $(a).text('[email protected]');
-          } else if (href.includes('sarkariresult.com.cm')) {
-            if (href.includes('/wp-content/') || href.includes('/wp-includes/') || /\.pdf\??/i.test(href)) {
-              $(a).attr('href', href.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
-            } else {
-              $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//gi, '/'));
-            }
-          }
-        }
-      });
-
-      entryContent.find('img').each((_, img) => {
-        const src = $(img).attr('src');
-        if (src) {
-           $(img).attr('src', src.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
-        }
-        const srcset = $(img).attr('srcset');
-        if (srcset) {
-           $(img).attr('srcset', srcset.replace(/sarkariresult\.com\.cm/gi, 'SARKARI_ASSETS_DOMAIN'));
-        }
-      });
-
-      mainContentHtml = entryContent.html() || '';
-      mainContentHtml = mainContentHtml.replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
-                                       .replace(/Sarkari Result/gi, 'Jobniti')
-                                       .replace(/SarkariResult/gi, 'Jobniti')
-                                       .replace(/Since 2009/gi, 'Since 2026')
-                                       .replace(/About Author\s*:\s*Sanjay Singh/gi, 'About Owner : Manii Gupta')
-                                       .replace(/Sanjay Singh has been writing content for the education sector &amp; competitive exams for quite some time now\. He has been in this field of content writing for almost 6 years\. He has obtained a master's degree in English Literature\. Currently contributing as a content writer on jobniti\.in\. He is basically a resident of Uttar Pradesh\./gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
-                                       .replace(/Sanjay Singh has been writing content[^<]*/gi, 'He has cracked several govt exams but somehow not able to make merit results. He has wide experience in this field.')
-                                       .replace(/<a[^>]*cdn-cgi\/l\/email-protection[^>]*>.*?<\/a>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
-                                       .replace(/<span[^>]*__cf_email__[^>]*>.*?<\/span>/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
-                                       .replace(/\[email\s*protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
-                                       .replace(/\[email&nbsp;protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
-                                       .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069')
-                                       .replace(/SARKARI_ASSETS_DOMAIN/g, 'sarkariresult.com.cm');
-
-      // Sanitize HTML to prevent XSS — strip all event handlers, scripts, dangerous tags
-      const purify = await getDOMPurify();
-      mainContentHtml = purify.sanitize(mainContentHtml, {
-        ALLOWED_TAGS: ['a', 'strong', 'em', 'b', 'i', 'u', 'p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img', 'div', 'span',
-          'blockquote', 'pre', 'code', 'sub', 'sup', 'small', 'section', 'article'],
-        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'style', 'class', 'colspan', 'rowspan', 'target', 'rel'],
-        ALLOW_DATA_ATTR: false,
-      });
-    }
-
-    const result = { title, description, mainContentHtml, slug: path };
-    innerPagesCache.set(path, { data: result, timestamp: Date.now() });
+    const purify = await getDOMPurify();
+    const result = processHtml(html, path);
+    innerPagesCache.set(path, { data: result, timestamp: now });
+    // Persist to Supabase so other Vercel instances can serve from cache
+    saveToSupabase(path, result);
     return result;
   } catch (error) {
     console.error("Error fetching inner page:", error);
-    if (cached) {
-      console.warn("Using stale cache for inner page due to network failure");
-      return cached.data;
-    }
-    // Don't throw — return null so notFound() renders a 404 instead of a 500
+    innerPagesCache.set(path, { data: null, timestamp: now });
     return null;
   }
 }
