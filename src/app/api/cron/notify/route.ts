@@ -34,11 +34,18 @@ function toISTDateString(tsMs: number): string {
   return new Date(tsMs + IST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+// Safe URL construction — only allow relative paths
+function safeUpstreamUrl(href: string): string | null {
+  if (!href.startsWith('/') || href.startsWith('//')) return null;
+  if (href.includes('..')) return null;
+  if (href.length > 300) return null;
+  return `https://sarkariresult.com.cm${href}`;
+}
+
 async function getPostDateIST(href: string): Promise<string | null> {
   try {
-    const baseUrl = 'https://sarkariresult.com.cm';
-    const fullUrl = href.startsWith('http') ? href : `${baseUrl}${href}`;
-    if (!fullUrl.includes('sarkariresult.com.cm') && !href.startsWith('/')) return null;
+    const fullUrl = safeUpstreamUrl(href);
+    if (!fullUrl) return null;
 
     const res = await fetch(fullUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
@@ -218,7 +225,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Cron notify error:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

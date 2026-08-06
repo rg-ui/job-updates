@@ -36,15 +36,22 @@ function toISTDateString(tsMs: number): string {
   return new Date(tsMs + IST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+// Safe URL construction — only allow relative paths to the allowed host
+function safeUpstreamUrl(href: string): string | null {
+  // Only allow relative paths starting with /
+  if (!href.startsWith('/') || href.startsWith('//')) return null;
+  // Block path traversal
+  if (href.includes('..')) return null;
+  // Max length
+  if (href.length > 300) return null;
+  return `https://sarkariresult.com.cm${href}`;
+}
+
 // Fetch only the <head> of a page to extract article:published_time meta tag
 async function getPostDateIST(href: string): Promise<string | null> {
   try {
-    const baseUrl = 'https://sarkariresult.com.cm';
-    const fullUrl = href.startsWith('http') ? href : `${baseUrl}${href}`;
-
-    if (!fullUrl.includes('sarkariresult.com.cm') && !href.startsWith('/')) {
-      return null;
-    }
+    const fullUrl = safeUpstreamUrl(href);
+    if (!fullUrl) return null;
 
     const res = await fetch(fullUrl, {
       headers: {
@@ -352,7 +359,7 @@ export async function GET() {
   } catch (error) {
     console.error('today-updates API error:', error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

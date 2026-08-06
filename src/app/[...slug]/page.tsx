@@ -1,6 +1,7 @@
 import React from 'react';
 import AdsSidebar from '@/components/AdsSidebar';
 import * as cheerio from 'cheerio';
+import DOMPurify from 'isomorphic-dompurify';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -8,12 +9,29 @@ import Link from 'next/link';
 export const revalidate = 60;
 
 const SITE_URL = 'https://jobniti.in';
+const ALLOWED_HOST = 'sarkariresult.com.cm';
+
+// Path traversal protection: only allow alphanumeric, hyphens, slashes
+function sanitizePath(slugParts: string[]): string | null {
+  const joined = slugParts.join('/');
+  // Block path traversal
+  if (joined.includes('..') || joined.includes('%2e%2e') || joined.includes('%252e')) return null;
+  // Block protocol injection
+  if (/^https?:\/\//i.test(joined)) return null;
+  // Only allow safe characters
+  if (!/^[a-zA-Z0-9\/\-_]+$/.test(joined)) return null;
+  // Max length guard
+  if (joined.length > 200) return null;
+  return joined;
+}
 
 const innerPagesCache = new Map<string, { data: { title: string, description: string, mainContentHtml: string, slug: string } | null, timestamp: number }>();
 const CACHE_TTL = 300 * 1000;
 
 async function fetchInnerPage(slug: string[]) {
-  const path = slug.join('/');
+  const path = sanitizePath(slug);
+  if (!path) return null;
+
   const now = Date.now();
   const cached = innerPagesCache.get(path);
 
@@ -117,6 +135,15 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/\[email&nbsp;protected\]/gi, '<a href="/contact/email" style="color: #0000c0; text-decoration: underline; font-weight: bold;">[email protected]</a>')
                                        .replace(/(Email:\s*<a href="\/contact\/email"[^>]*>\[email protected\]<\/a>)/gi, '$1 <br/><br/><strong>For any query:</strong> 9135293069')
                                        .replace(/SARKARI_ASSETS_DOMAIN/g, 'sarkariresult.com.cm');
+
+      // Sanitize HTML to prevent XSS — strip all event handlers, scripts, dangerous tags
+      mainContentHtml = DOMPurify.sanitize(mainContentHtml, {
+        ALLOWED_TAGS: ['a', 'strong', 'em', 'b', 'i', 'u', 'p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img', 'div', 'span',
+          'blockquote', 'pre', 'code', 'sub', 'sup', 'small', 'section', 'article'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'width', 'height', 'style', 'class', 'colspan', 'rowspan', 'target', 'rel'],
+        ALLOW_DATA_ATTR: false,
+      });
     }
 
     const result = { title, description, mainContentHtml, slug: path };

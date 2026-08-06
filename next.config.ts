@@ -11,6 +11,7 @@ const csp = [
   `frame-src 'none'`,
   `form-action 'self'`,
   `base-uri 'self'`,
+  `upgrade-insecure-requests`,
 ].join("; ");
 
 const nextConfig: NextConfig = {
