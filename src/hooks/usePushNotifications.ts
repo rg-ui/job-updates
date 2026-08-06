@@ -15,15 +15,42 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+// Wait for service worker to be ready with timeout
+function waitForSW(timeoutMs = 5000): Promise<ServiceWorkerRegistration> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('SW timeout')), timeoutMs);
+
+    if (navigator.serviceWorker.controller) {
+      // SW already active
+      navigator.serviceWorker.ready.then(reg => {
+        clearTimeout(timeout);
+        resolve(reg);
+      }).catch(err => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+      return;
+    }
+
+    // Wait for SW to become active
+    navigator.serviceWorker.ready.then(reg => {
+      clearTimeout(timeout);
+      resolve(reg);
+    }).catch(err => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+  });
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
+    if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
       checkExistingSubscription();
@@ -32,38 +59,35 @@ export function usePushNotifications() {
 
   async function checkExistingSubscription() {
     try {
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await waitForSW(3000);
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
         setSubscription(sub);
         setIsSubscribed(true);
       }
     } catch {
-      // Service worker not ready yet
+      // SW not ready — bell will show as unsubscribed, user can click to subscribe
     }
   }
 
   const subscribe = useCallback(async () => {
     if (!isSupported || !VAPID_PUBLIC_KEY) return false;
 
-    setIsLoading(true);
     try {
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        setIsLoading(false);
         return false;
       }
 
       // INSTANT UI update — show green bell immediately
       setIsSubscribed(true);
-      setIsLoading(false);
 
       // Background: do the heavy lifting silently
       (async () => {
         try {
-          const reg = await navigator.serviceWorker.ready;
+          const reg = await waitForSW(5000);
           let sub = await reg.pushManager.getSubscription();
 
           if (!sub) {
@@ -89,44 +113,45 @@ export function usePushNotifications() {
           }).catch(() => {});
         } catch (bgErr) {
           console.error('Background push setup failed:', bgErr);
+          // Revert UI if background setup fails
+          setIsSubscribed(false);
         }
       })();
 
       return true;
     } catch (err) {
       console.error('Push subscription failed:', err);
-      setIsLoading(false);
       return false;
     }
   }, [isSupported]);
 
   const unsubscribe = useCallback(async () => {
-    if (!subscription) return;
-
     // INSTANT UI update
     setIsSubscribed(false);
+    const currentSub = subscription;
     setSubscription(null);
 
     // Background cleanup
-    (async () => {
-      try {
-        await subscription.unsubscribe();
-        fetch('/api/push/unsubscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: subscription.endpoint }),
-        }).catch(() => {});
-      } catch (err) {
-        console.error('Background unsubscribe failed:', err);
-      }
-    })();
+    if (currentSub) {
+      (async () => {
+        try {
+          await currentSub.unsubscribe();
+          fetch('/api/push/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: currentSub.endpoint }),
+          }).catch(() => {});
+        } catch (err) {
+          console.error('Background unsubscribe failed:', err);
+        }
+      })();
+    }
   }, [subscription]);
 
   return {
     isSupported,
     isSubscribed,
     permission,
-    isLoading,
     subscribe,
     unsubscribe,
   };

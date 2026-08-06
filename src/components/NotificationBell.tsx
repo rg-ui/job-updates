@@ -33,7 +33,7 @@ function CheckIcon({ className }: { className?: string }) {
 }
 
 export default function NotificationBell() {
-  const { isSupported, isSubscribed, permission, isLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { isSupported, isSubscribed, permission, subscribe, unsubscribe } = usePushNotifications();
   const [showTooltip, setShowTooltip] = useState(false);
   const [showDeniedMsg, setShowDeniedMsg] = useState(false);
   const [justSubscribed, setJustSubscribed] = useState(false);
@@ -196,10 +196,9 @@ export default function NotificationBell() {
       <button
         className={getStateClass()}
         onClick={handleClick}
-        onMouseEnter={() => !isLoading && setShowTooltip(true)}
+        onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         aria-label={isSubscribed ? 'Unsubscribe from notifications' : 'Subscribe to notifications'}
-        disabled={isLoading}
       >
         {isSubscribed ? (
           <BellIcon />
