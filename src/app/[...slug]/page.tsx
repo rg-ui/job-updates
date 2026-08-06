@@ -158,16 +158,20 @@ async function fetchInnerPage(slug: string[]) {
   }
 }
 
-export async function generateMetadata(props: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string[] }> | { slug: string[] } }): Promise<Metadata> {
   try {
-    const params = await props.params;
-    const slug = params?.slug || [];
+    const resolvedParams = await (props.params instanceof Promise ? props.params : Promise.resolve(props.params));
+    const slug = Array.isArray(resolvedParams?.slug)
+      ? resolvedParams.slug
+      : typeof resolvedParams?.slug === 'string'
+        ? [resolvedParams.slug]
+        : [];
     const data = await fetchInnerPage(slug);
-    if (!data) return { title: 'Not Found' };
+    if (!data) return { title: 'Jobniti - Updates' };
     const pageUrl = `${SITE_URL}/${slug.join('/')}`;
     return {
-      title: data.title,
-      description: data.description,
+      title: data.title || 'Jobniti',
+      description: data.description || 'Jobniti - Sarkari Result & Latest Govt Jobs',
       alternates: {
         canonical: pageUrl,
       },
@@ -177,14 +181,17 @@ export async function generateMetadata(props: { params: Promise<{ slug: string[]
   }
 }
 
-function buildJobPostingJsonLd(title: string, description: string, slug: string[]) {
-  const pageUrl = `${SITE_URL}/${slug.join('/')}`;
-  const hiringOrg = title.match(/(?:for|at|in)\s+(.+?)(?:\s+(?:recruitment|vacancy|20\d{2}|notification))/i)?.[1] || 'Government of India';
+function buildJobPostingJsonLd(title: string = 'Job Update', description: string = '', slug: string[] = []) {
+  const safeTitle = typeof title === 'string' ? title : 'Job Update';
+  const safeDesc = typeof description === 'string' ? description : '';
+  const safeSlug = Array.isArray(slug) ? slug : [];
+  const pageUrl = `${SITE_URL}/${safeSlug.join('/')}`;
+  const hiringOrg = safeTitle.match(/(?:for|at|in)\s+(.+?)(?:\s+(?:recruitment|vacancy|20\d{2}|notification))/i)?.[1] || 'Government of India';
   return {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
-    title: title,
-    description: description,
+    title: safeTitle,
+    description: safeDesc,
     url: pageUrl,
     datePosted: new Date().toISOString().split('T')[0],
     hiringOrganization: {
@@ -221,8 +228,8 @@ function buildJobPostingJsonLd(title: string, description: string, slug: string[
   };
 }
 
-function getOriginalSections(title: string) {
-  const lowerTitle = title.toLowerCase();
+function getOriginalSections(title: string = '') {
+  const lowerTitle = (typeof title === 'string' ? title : '').toLowerCase();
   const isResult = /result|merit|score|cut.?off/i.test(lowerTitle);
   const isAdmitCard = /admit card|hall ticket/i.test(lowerTitle);
   const isExam = /exam|paper|test|cbt/i.test(lowerTitle);
@@ -331,13 +338,41 @@ function getOriginalSections(title: string) {
   return { preparationTips, careerAdvice, faqItems };
 }
 
-export default async function InnerPage(props: { params: Promise<{ slug: string[] }> }) {
-  const params = await props.params;
-  const slug = params?.slug || [];
+export default async function InnerPage(props: { params: Promise<{ slug: string[] }> | { slug: string[] } }) {
+  const resolvedParams = await (props.params instanceof Promise ? props.params : Promise.resolve(props.params));
+  const slug = Array.isArray(resolvedParams?.slug)
+    ? resolvedParams.slug
+    : typeof resolvedParams?.slug === 'string'
+      ? [resolvedParams.slug]
+      : [];
+
   const data = await fetchInnerPage(slug);
 
   if (!data) {
-    notFound();
+    return (
+      <div className="grid-container" style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔍</div>
+        <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#0A2540', marginBottom: '12px' }}>
+          Update Currently Loading / Unavailable
+        </h1>
+        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px auto', lineHeight: '1.6' }}>
+          This page information is currently being updated or is temporarily unavailable from official sources. Please try again in a few moments or browse latest updates on homepage.
+        </p>
+        <Link href="/" style={{
+          display: 'inline-block',
+          padding: '12px 28px',
+          background: 'linear-gradient(135deg, #059669, #10b981)',
+          color: 'white',
+          borderRadius: '30px',
+          fontWeight: '700',
+          fontSize: '15px',
+          textDecoration: 'none',
+          boxShadow: '0 4px 14px rgba(16,185,129,0.3)',
+        }}>
+          Back to Homepage
+        </Link>
+      </div>
+    );
   }
 
   const { preparationTips, careerAdvice, faqItems } = getOriginalSections(data.title);

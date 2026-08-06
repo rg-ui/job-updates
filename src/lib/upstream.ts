@@ -1,9 +1,11 @@
-import dns from 'node:dns';
-
 try {
-  dns.setDefaultResultOrder('ipv4first');
+  // Safe dynamic require to avoid bundling errors in edge/serverless runtimes
+  const dns = require('node:dns');
+  if (dns && typeof dns.setDefaultResultOrder === 'function') {
+    dns.setDefaultResultOrder('ipv4first');
+  }
 } catch {
-  // Ignore if unsupported in specific runtimes
+  // Ignore if unsupported in environment
 }
 
 interface FetchUpstreamOptions {
