@@ -1,11 +1,19 @@
 import React from 'react';
 import AdsSidebar from '@/components/AdsSidebar';
 import * as cheerio from 'cheerio';
-import DOMPurify from 'isomorphic-dompurify';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchUpstream } from '@/lib/upstream';
+
+let DOMPurify: typeof import('isomorphic-dompurify')['default'] | null = null;
+async function getDOMPurify() {
+  if (!DOMPurify) {
+    const mod = await import('isomorphic-dompurify');
+    DOMPurify = mod.default;
+  }
+  return DOMPurify;
+}
 
 // Tell Vercel to allow up to 30 seconds for this serverless function
 export const maxDuration = 30;
@@ -137,7 +145,8 @@ async function fetchInnerPage(slug: string[]) {
                                        .replace(/SARKARI_ASSETS_DOMAIN/g, 'sarkariresult.com.cm');
 
       // Sanitize HTML to prevent XSS — strip all event handlers, scripts, dangerous tags
-      mainContentHtml = DOMPurify.sanitize(mainContentHtml, {
+      const purify = await getDOMPurify();
+      mainContentHtml = purify.sanitize(mainContentHtml, {
         ALLOWED_TAGS: ['a', 'strong', 'em', 'b', 'i', 'u', 'p', 'br', 'hr', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
           'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'img', 'div', 'span',
           'blockquote', 'pre', 'code', 'sub', 'sup', 'small', 'section', 'article'],

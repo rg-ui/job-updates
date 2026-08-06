@@ -1,11 +1,12 @@
 // Force IPv4-first DNS resolution to avoid Cloudflare IPv6 timeouts
 try {
-  const dns = require('node:dns');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const dns = require('node:dns') as typeof import('node:dns');
   if (dns && typeof dns.setDefaultResultOrder === 'function') {
     dns.setDefaultResultOrder('ipv4first');
   }
 } catch {
-  // Ignore if unsupported in environment (edge runtimes etc.)
+  // Ignore if unsupported (edge runtimes, etc.)
 }
 
 interface FetchUpstreamOptions {
