@@ -214,6 +214,7 @@ export default function RootLayout({
             <AdsFooter />
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px', margin: '12px 0 16px', fontSize: '13px' }}>
               <Link href="/about" style={{ color: '#87CEEB', textDecoration: 'none' }}>About Us</Link>
+              <Link href="/team" style={{ color: '#87CEEB', textDecoration: 'none' }}>Our Team</Link>
               <Link href="/privacy-policy" style={{ color: '#87CEEB', textDecoration: 'none' }}>Privacy Policy</Link>
               <Link href="/terms" style={{ color: '#87CEEB', textDecoration: 'none' }}>Terms &amp; Conditions</Link>
               <Link href="/disclaimer" style={{ color: '#87CEEB', textDecoration: 'none' }}>Disclaimer</Link>

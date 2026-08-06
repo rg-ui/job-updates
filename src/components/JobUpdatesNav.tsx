@@ -15,6 +15,7 @@ const navLinks = [
 
 const complianceLinks = [
   { label: 'About', href: '/about' },
+  { label: 'Team', href: '/team' },
   { label: 'Privacy Policy', href: '/privacy-policy' },
   { label: 'Terms', href: '/terms' },
   { label: 'Disclaimer', href: '/disclaimer' },
