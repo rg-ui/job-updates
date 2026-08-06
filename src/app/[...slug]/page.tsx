@@ -40,10 +40,16 @@ async function fetchInnerPage(slug: string[]) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     const res = await fetch(`https://sarkariresult.com.cm/${path}/`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 60 },
+      signal: controller.signal,
     });
-    
+
+    clearTimeout(timeout);
+
     if (!res.ok) {
       if (res.status === 404) {
         innerPagesCache.set(path, { data: null, timestamp: Date.now() });
@@ -155,7 +161,8 @@ async function fetchInnerPage(slug: string[]) {
       console.warn("Using stale cache for inner page due to network failure");
       return cached.data;
     }
-    throw error;
+    // Don't throw — return null so notFound() renders a 404 instead of a 500
+    return null;
   }
 }
 
