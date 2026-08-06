@@ -28,6 +28,7 @@ export async function fetchUpstream(
       headers: BROWSER_HEADERS,
       signal: controller.signal,
       redirect: 'follow',
+      cache: 'no-store',
     });
     clearTimeout(timer);
 
