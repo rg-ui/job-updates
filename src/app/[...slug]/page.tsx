@@ -5,6 +5,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { fetchUpstream } from '@/lib/upstream';
 
 export const revalidate = 60;
 
@@ -40,25 +41,16 @@ async function fetchInnerPage(slug: string[]) {
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
-    const res = await fetch(`https://sarkariresult.com.cm/${path}/`, {
-      next: { revalidate: 60 },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
-
-    if (!res.ok) {
-      if (res.status === 404) {
-        innerPagesCache.set(path, { data: null, timestamp: Date.now() });
-        return null;
+    const html = await fetchUpstream(path, { revalidate: 60 });
+    if (!html) {
+      if (cached) {
+        console.warn("Using stale cache for inner page due to network failure");
+        return cached.data;
       }
-      throw new Error(`Failed to fetch page: ${res.status}`);
+      innerPagesCache.set(path, { data: null, timestamp: Date.now() });
+      return null;
     }
 
-    const html = await res.text();
     const $ = cheerio.load(html);
 
     let title = $('title').text() || 'Jobniti';

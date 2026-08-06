@@ -5,6 +5,7 @@ import StateJobFilter from '@/components/StateJobFilter';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
+import { fetchUpstream } from '@/lib/upstream';
 
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const revalidate = 60;
@@ -33,13 +34,15 @@ async function fetchSarkariData() {
   }
 
   try {
-    // Use a standard User-Agent so we don't look like a malicious bot
-    const res = await fetch('https://sarkariresult.com.cm/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    const html = await fetchUpstream('');
+    if (!html) {
+      if (cachedData) {
+        console.warn("Using stale cache due to scraping failure");
+        return cachedData;
       }
-    });
-    const html = await res.text();
+      return null;
+    }
+
     const $ = cheerio.load(html);
 
     const blocks: { title: string, links: { text: string, href: string, isViewMore?: boolean }[] }[] = [];
