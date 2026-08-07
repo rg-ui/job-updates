@@ -75,7 +75,25 @@ function processHtml(html: string, path: string): PageData {
                             .replace(/Sarkari Result/gi, 'Jobniti');
 
   let mainContentHtml = '';
-  const entryContent = $('main.site-main');
+  // Try multiple selectors in priority order — upstream may change structure
+  const selectors = [
+    'main.site-main',
+    'main#main',
+    'main',
+    '.site-content .entry-content',
+    'article .entry-content',
+    '.entry-content',
+    '#content',
+    '.site-content',
+  ];
+  let entryContent = $(selectors[0]);
+  for (const sel of selectors) {
+    const el = $(sel);
+    if (el.length > 0 && el.text().trim().length > 100) {
+      entryContent = el;
+      break;
+    }
+  }
 
   if (entryContent.length > 0) {
     entryContent.find('ins.adsbygoogle').remove();
@@ -178,25 +196,40 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
     return dbData;
   }
 
-  // 3. Fetch from upstream
-  try {
-    const html = await fetchUpstream(path, { revalidate: 60 });
-    if (!html) {
-      innerPagesCache.set(path, { data: null, timestamp: now });
-      return null;
-    }
+  // 3. Fetch from upstream (with retry on timeout)
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const html = await fetchUpstream(path, { timeoutMs: attempt === 1 ? 12000 : 18000 });
+      if (!html) {
+        if (attempt === 2) {
+          innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 }); // retry in 30s
+          return null;
+        }
+        continue;
+      }
 
-    const purify = await getDOMPurify();
-    const result = processHtml(html, path);
-    innerPagesCache.set(path, { data: result, timestamp: now });
-    // Persist to Supabase so other Vercel instances can serve from cache
-    saveToSupabase(path, result);
-    return result;
-  } catch (error) {
-    console.error("Error fetching inner page:", error);
-    innerPagesCache.set(path, { data: null, timestamp: now });
-    return null;
+      await getDOMPurify();
+      const result = processHtml(html, path);
+
+      // Only cache if we actually got meaningful content
+      if (result.mainContentHtml && result.mainContentHtml.length > 200) {
+        innerPagesCache.set(path, { data: result, timestamp: now });
+        // Persist to Supabase so other Vercel instances can serve from cache
+        saveToSupabase(path, result);
+      } else {
+        // Got HTML but no content — short-cache and retry soon
+        innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 60000 });
+      }
+      return result;
+    } catch (error) {
+      console.error(`Error fetching inner page (attempt ${attempt}):`, error);
+      if (attempt === 2) {
+        innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 });
+        return null;
+      }
+    }
   }
+  return null;
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string[] }> | { slug: string[] } }): Promise<Metadata> {
@@ -390,28 +423,74 @@ export default async function InnerPage(props: { params: Promise<{ slug: string[
   const data = await fetchInnerPage(slug);
 
   if (!data) {
+    // Auto-retry: the page will reload after 6 seconds, giving the server
+    // time to complete the upstream fetch and cache the result
     return (
       <div className="grid-container" style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔍</div>
-        <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#0A2540', marginBottom: '12px' }}>
-          Update Currently Loading / Unavailable
-        </h1>
-        <p style={{ fontSize: '15px', color: '#6b7280', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px auto', lineHeight: '1.6' }}>
-          This page information is currently being updated or is temporarily unavailable from official sources. Please try again in a few moments or browse latest updates on homepage.
-        </p>
-        <Link href="/" style={{
-          display: 'inline-block',
-          padding: '12px 28px',
-          background: 'linear-gradient(135deg, #059669, #10b981)',
-          color: 'white',
-          borderRadius: '30px',
-          fontWeight: '700',
-          fontSize: '15px',
-          textDecoration: 'none',
-          boxShadow: '0 4px 14px rgba(16,185,129,0.3)',
+        {/* Auto-reload after 6 seconds */}
+        <meta httpEquiv="refresh" content="6" />
+
+        <div style={{
+          display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+          background: '#fff', borderRadius: '24px', padding: '48px 40px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.08)', maxWidth: '480px', width: '100%',
         }}>
-          Back to Homepage
-        </Link>
+          {/* Animated spinner */}
+          <div style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#059669',
+            animation: 'spin 1s linear infinite',
+            marginBottom: '24px',
+          }} />
+
+          <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0A2540', marginBottom: '10px' }}>
+            Fetching Notification Details...
+          </h1>
+          <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.7', marginBottom: '28px' }}>
+            This update is being fetched from official sources. The page will
+            <strong style={{ color: '#059669' }}> auto-refresh in a few seconds</strong>.
+            If it doesn&apos;t refresh, click the button below.
+          </p>
+
+          {/* Progress bar */}
+          <div style={{
+            width: '100%', height: '6px', background: '#f3f4f6',
+            borderRadius: '99px', overflow: 'hidden', marginBottom: '28px',
+          }}>
+            <div style={{
+              height: '100%',
+              background: 'linear-gradient(90deg, #059669, #10b981)',
+              borderRadius: '99px',
+              animation: 'progress 6s linear forwards',
+            }} />
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <a href="" style={{
+              display: 'inline-block', padding: '11px 26px',
+              background: 'linear-gradient(135deg, #059669, #10b981)',
+              color: 'white', borderRadius: '30px', fontWeight: '700',
+              fontSize: '14px', textDecoration: 'none',
+              boxShadow: '0 4px 14px rgba(16,185,129,0.3)',
+            }}>
+              🔄 Retry Now
+            </a>
+            <Link href="/" style={{
+              display: 'inline-block', padding: '11px 26px',
+              background: '#f9fafb', color: '#374151', borderRadius: '30px',
+              fontWeight: '600', fontSize: '14px', textDecoration: 'none',
+              border: '1px solid #e5e7eb',
+            }}>
+              ← Back to Home
+            </Link>
+          </div>
+        </div>
+
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes spin { to { transform: rotate(360deg); } }
+          @keyframes progress { from { width: 0%; } to { width: 100%; } }
+        `}} />
       </div>
     );
   }

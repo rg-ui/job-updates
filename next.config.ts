@@ -5,7 +5,7 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`,
   `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.vercel-analytics.com`,
   `font-src 'self' https://fonts.gstatic.com data:`,
-  `img-src 'self' data:`,
+  `img-src 'self' data: https://sarkariresult.com.cm https://*.sarkariresult.com.cm`,
   `connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://fcm.googleapis.com https://android.clients.google.com`,
   `worker-src 'self' blob:`,
   `frame-src 'none'`,

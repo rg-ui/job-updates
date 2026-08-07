@@ -13,7 +13,7 @@ export async function fetchUpstream(
   urlPath: string,
   options: { revalidate?: number | false; timeoutMs?: number } = {}
 ): Promise<string | null> {
-  const { timeoutMs = 8000 } = options;
+  const { timeoutMs = 15000 } = options;
 
   const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
   const url = cleanPath
