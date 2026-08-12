@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { cache } from 'react';
 import AdsSidebar from '@/components/AdsSidebar';
 import SeoContent from '@/components/SeoContent';
-import StateJobFilter from '@/components/StateJobFilter';
+import dynamic from 'next/dynamic';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
 import { fetchUpstream } from '@/lib/upstream';
+
+const StateJobFilter = dynamic(() => import('@/components/StateJobFilter'));
 
 // Revalidate page every 60 seconds to prevent hammering the target site and getting IP banned
 export const maxDuration = 30;
@@ -24,23 +26,10 @@ function sanitizeUrl(url: string): string {
   }
 }
 
-let cachedData: { blocks: any[], topNotices: any[] } | null = null;
-let cacheTime = 0;
-const CACHE_TTL = 300 * 1000; // 5 minutes cache
-
-async function fetchSarkariData() {
-  const now = Date.now();
-  if (cachedData && (now - cacheTime < CACHE_TTL)) {
-    return cachedData;
-  }
-
+const fetchSarkariData = cache(async () => {
   try {
     const html = await fetchUpstream('');
     if (!html) {
-      if (cachedData) {
-        console.warn("Using stale cache due to scraping failure");
-        return cachedData;
-      }
       return null;
     }
 
@@ -200,8 +189,6 @@ async function fetchSarkariData() {
       });
 
     const result = { blocks: sortedBlocks, topNotices };
-    cachedData = result;
-    cacheTime = Date.now();
     return result;
   } catch (error) {
     // Enhanced security logging for scraping failures
@@ -213,15 +200,9 @@ async function fetchSarkariData() {
       message: error instanceof Error ? error.message : String(error)
     };
     console.error(JSON.stringify(logEntry));
-    
-    // Return stale cache if available when backend fails
-    if (cachedData) {
-      console.warn("Using stale cache due to scraping failure");
-      return cachedData;
-    }
     return null;
   }
-}
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await fetchSarkariData();

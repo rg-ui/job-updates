@@ -113,6 +113,9 @@ export async function GET(request: Request) {
     $('.gb-grid-column').each((_, el) => {
       $(el).find('a').each((_, a) => {
         let href = sanitizeUrl($(a).attr('href') || '#');
+        if (href.includes('sarkariresult.com.cm')) {
+          href = href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/');
+        }
         let text = $(a).text().trim().replace(/sarkariresult\.com\.cm/gi, 'jobniti.in').replace(/Sarkari Result/gi, 'Jobniti');
         if (text.length > 3 && href.startsWith('/') && !seenHrefs.has(href)) {
           seenHrefs.add(href);
