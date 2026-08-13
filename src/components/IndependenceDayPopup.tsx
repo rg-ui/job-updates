@@ -7,7 +7,12 @@ export default function IndependenceDayPopup() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Show popup once per session around 15th August
+    // Show popup ONLY on 15th August (month 7 = August in 0-indexed JS Date)
+    const nowIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+    const isAugust15 = nowIST.getUTCMonth() === 7 && nowIST.getUTCDate() === 15;
+
+    if (!isAugust15) return;
+
     const hasSeen = sessionStorage.getItem('jobniti_15aug_popup_2026');
     if (!hasSeen) {
       // Small delay for smooth entrance after page load
