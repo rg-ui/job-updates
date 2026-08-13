@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 function BellIcon({ className }: { className?: string }) {
@@ -37,12 +37,6 @@ export default function NotificationBell() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showDeniedMsg, setShowDeniedMsg] = useState(false);
   const [justSubscribed, setJustSubscribed] = useState(false);
-
-  useEffect(() => {
-    if (permission === 'denied') {
-      setShowDeniedMsg(true);
-    }
-  }, [permission]);
 
   if (!isSupported) return null;
 

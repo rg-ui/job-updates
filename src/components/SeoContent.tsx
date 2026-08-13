@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 interface SeoContentProps {
   topNotices?: { text: string; href: string }[];
@@ -17,7 +18,7 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
       {/* Railway RRB Group D Result 2026 High Ranking SEO Section */}
       <section className="glass-card" style={{ border: '2px solid rgba(16, 185, 129, 0.4)' }}>
         <h2 className="glass-title" style={{ background: 'linear-gradient(135deg, #059669, #0A2540)' }}>
-          📢 Railway RRB Group D Result 2026 Out: Region-Wise Merit List & Cut Off Marks
+          📢 Railway RRB Group D Result 2026 Out: Region-Wise Merit List &amp; Cut Off Marks
         </h2>
         <div className="glass-body">
           <p>
@@ -30,7 +31,7 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
           <div style={{ margin: '20px 0', padding: '15px', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '12px', borderLeft: '4px solid #10b981' }}>
             <h3 style={{ margin: '0 0 10px 0', color: '#0A2540', fontSize: '16px', fontWeight: '700' }}>⚡ Quick Steps to Check RRB Group D Result 2026</h3>
             <ol style={{ margin: 0, paddingLeft: '20px', fontSize: '14.5px', lineHeight: '1.6' }}>
-              <li>Go to the main results section on the homepage and click on <a href="/railway-rrb-group-d-2026-chk-now/" style={{ color: '#059669', fontWeight: '700', textDecoration: 'underline' }}>Railway RRB Group D Result 2026 Link</a>.</li>
+              <li>Go to the main results section on the homepage and click on <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ color: '#059669', fontWeight: '700', textDecoration: 'underline' }}>Railway RRB Group D Result 2026 Link</Link>.</li>
               <li>Select your respective RRB region (e.g., RRB Allahabad, RRB Patna, RRB Mumbai, etc.).</li>
               <li>Open the PDF file of selected candidates and search for your Roll Number or Registration ID using Ctrl+F.</li>
               <li>Download the official RRB Group D Cut-off score sheet to check qualification status for the Physical Efficiency Test (PET).</li>
@@ -39,14 +40,14 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
 
           <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0A2540', marginBottom: '10px' }}>🌐 Official RRB Region-Wise Result Portals:</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', fontSize: '13px' }}>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Allahabad Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Patna Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Mumbai Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Secunderabad Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bhopal Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Chandigarh Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Kolkata Group D</a></div>
-            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <a href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bangalore Group D</a></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Allahabad Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Patna Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Mumbai Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Secunderabad Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bhopal Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Chandigarh Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Kolkata Group D</Link></div>
+            <div style={{ padding: '8px', background: '#f8fafc', borderRadius: '6px' }}>📍 <Link href="/railway-rrb-group-d-2026-chk-now/" style={{ fontWeight: '600' }}>RRB Bangalore Group D</Link></div>
           </div>
         </div>
       </section>
@@ -56,14 +57,14 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
         <h1 className="glass-title">{dynamicHeading}</h1>
         <div className="glass-body">
           <p>
-            Welcome to <strong>Jobniti</strong>, India's most dependable and lightning-fast platform for <strong>Sarkari Result 2026</strong>, <strong>latest Govt Jobs</strong>, <strong>Admit card updates</strong>, Answer Keys, Syllabus, and Admissions updates. 
+            Welcome to <strong>Jobniti</strong>, India&apos;s most dependable and lightning-fast platform for <strong>Sarkari Result 2026</strong>, <strong>latest Govt Jobs</strong>, <strong>Admit card updates</strong>, Answer Keys, Syllabus, and Admissions updates. 
           </p>
           <p>
-            We bring you prompt, accurate, and real-time information sourced directly from official government portals. Whether you're preparing for <strong>SSC, UPSC, Railways, Police, Defence, Banking, Teaching</strong>, or looking for the fastest <strong>Sarkari Naukri</strong> and <strong>Sarkari Result 2026</strong> notifications, we ensure you never miss an important update.
+            We bring you prompt, accurate, and real-time information sourced directly from official government portals. Whether you&apos;re preparing for <strong>SSC, UPSC, Railways, Police, Defence, Banking, Teaching</strong>, or looking for the fastest <strong>Sarkari Naukri</strong> and <strong>Sarkari Result 2026</strong> notifications, we ensure you never miss an important update.
           </p>
           <div style={{ marginTop: '20px' }}>
             <span className="modern-badge">🔥 Govt Job Notifications</span>
-            <span className="modern-badge">📈 Live Updates & Alerts</span>
+            <span className="modern-badge">📈 Live Updates &amp; Alerts</span>
           </div>
           <div className="disclaimer-box" style={{ marginTop: '25px' }}>
             <p style={{ margin: 0 }}><em>Note: Jobniti is an independent aggregator and is not affiliated with any government agency. All information is for public awareness.</em></p>
@@ -76,13 +77,13 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
         <h2 className="glass-title">💡 Why Are Government Jobs a Smart Career Choice?</h2>
         <div className="glass-body">
           <p>
-            In India, a Sarkari Naukri is more than just a profession; it's a symbol of stability, respect, and long-term security. With unpredictable private sector markets, a government job offers unmatched peace of mind.
+            In India, a Sarkari Naukri is more than just a profession; it&apos;s a symbol of stability, respect, and long-term security. With unpredictable private sector markets, a government job offers unmatched peace of mind.
           </p>
           <ul>
             <li><strong>Job Security:</strong> Immunity from sudden layoffs and market recessions.</li>
             <li><strong>Dependable Benefits:</strong> Comprehensive health insurance, pensions, and allowances.</li>
             <li><strong>Work-Life Balance:</strong> Fixed working hours and generous leave policies.</li>
-            <li><strong>Social Impact:</strong> An opportunity to contribute directly to the nation's growth and public welfare.</li>
+            <li><strong>Social Impact:</strong> An opportunity to contribute directly to the nation&apos;s growth and public welfare.</li>
           </ul>
         </div>
       </section>
@@ -96,11 +97,11 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
           </p>
           <div className="job-types-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '20px' }}>
             <div className="job-type-card">
-              <h3>🛡️ Defence & Police</h3>
+              <h3>🛡️ Defence &amp; Police</h3>
               <p>Army, Navy, Air Force, State Police</p>
             </div>
             <div className="job-type-card">
-              <h3>🏦 Banking & Finance</h3>
+              <h3>🏦 Banking &amp; Finance</h3>
               <p>SBI, IBPS, RBI, NABARD</p>
             </div>
             <div className="job-type-card">
@@ -108,7 +109,7 @@ export default function SeoContent({ topNotices = [] }: SeoContentProps) {
               <p>NTPC, Group D, ALP</p>
             </div>
             <div className="job-type-card">
-              <h3>📚 Teaching & Admin</h3>
+              <h3>📚 Teaching &amp; Admin</h3>
               <p>UPSC, TET, KVS, NVS</p>
             </div>
           </div>

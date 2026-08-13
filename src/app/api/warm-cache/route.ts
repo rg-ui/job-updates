@@ -145,7 +145,8 @@ export async function POST(request: Request) {
           .single();
 
         // Skip if already cached WITH real content
-        if (existing?.value && (existing.value as any).mainContentHtml?.length > 200) {
+        const cachedVal = existing?.value as { mainContentHtml?: string } | null;
+        if (cachedVal && (cachedVal.mainContentHtml?.length ?? 0) > 200) {
           skipped++;
           continue;
         }

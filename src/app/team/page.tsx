@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Our Team',
@@ -324,9 +325,9 @@ export default function TeamPage() {
         <p className="team-cta-text">
           We&apos;re always looking for passionate people who want to help job seekers across India. Reach out to us.
         </p>
-        <a href="/contact" className="team-cta-btn">
+        <Link href="/contact" className="team-cta-btn">
           Get in Touch →
-        </a>
+        </Link>
       </div>
     </div>
   );

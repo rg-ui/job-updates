@@ -1,26 +1,8 @@
 {
-  "functions": {
-    "app/[...slug]/page": {
-      "maxDuration": 30
-    },
-    "app/page": {
-      "maxDuration": 30
-    },
-    "app/api/today-updates/route": {
-      "maxDuration": 30
-    },
-    "app/api/warm-cache/route": {
-      "maxDuration": 60
-    },
-    "app/api/cron/notify/route": {
-      "maxDuration": 60
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/notify",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     }
   ]
 }
-

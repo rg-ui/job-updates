@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import crypto from 'crypto';
 
 const MAX_ENDPOINT_LENGTH = 2048;
 const MAX_KEY_LENGTH = 256;

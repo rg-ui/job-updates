@@ -159,7 +159,7 @@ async function sendPushNotifications(
 
   let sentCount = 0;
   let errorCount = 0;
-  let failedEndpoints: string[] = [];
+  const failedEndpoints: string[] = [];
 
   const sendPromises = subscriptions.map(async (sub) => {
     try {
@@ -172,10 +172,13 @@ async function sendPushNotifications(
       };
       await webpush.sendNotification(pushSubscription, payload);
       sentCount++;
-    } catch (err: any) {
+    } catch (err: unknown) {
       errorCount++;
-      if (err.statusCode === 404 || err.statusCode === 410) {
-        failedEndpoints.push(sub.endpoint);
+      if (err && typeof err === 'object' && 'statusCode' in err) {
+        const sc = (err as { statusCode?: number }).statusCode;
+        if (sc === 404 || sc === 410) {
+          failedEndpoints.push(sub.endpoint);
+        }
       }
     }
   });
@@ -235,7 +238,7 @@ export async function GET() {
           href = href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/');
         }
 
-        let text = $(a).text().trim()
+        const text = $(a).text().trim()
           .replace(/sarkariresult\.com\.cm/gi, 'jobniti.in')
           .replace(/Sarkari Result/gi, 'Jobniti');
 

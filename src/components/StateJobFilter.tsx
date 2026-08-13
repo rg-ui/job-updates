@@ -53,7 +53,7 @@ export default function StateJobFilter({ initialBlocks }: StateJobFilterProps) {
       } else {
         setTodayFetchError(json.error || 'Failed to fetch today\'s updates');
       }
-    } catch (e: any) {
+    } catch {
       setTodayFetchError('Network error. Please try again.');
     } finally {
       setIsFetchingToday(false);
@@ -93,9 +93,11 @@ export default function StateJobFilter({ initialBlocks }: StateJobFilterProps) {
   }
 
   // Today IST date string
-  const todayIST = new Date(Date.now() + 5.5 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10); // e.g. "2026-07-01"
+  const [todayIST] = useState(() => {
+    return new Date(Date.now() + 5.5 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+  });
 
   return (
     <div className="state-filter-section" style={{ marginBottom: '30px' }}>

@@ -2,7 +2,6 @@ import React from 'react';
 import AdsSidebar from '@/components/AdsSidebar';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchUpstream } from '@/lib/upstream';
 import { supabase } from '@/lib/supabase';

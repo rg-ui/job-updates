@@ -116,7 +116,7 @@ export async function GET(request: Request) {
         if (href.includes('sarkariresult.com.cm')) {
           href = href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//g, '/');
         }
-        let text = $(a).text().trim().replace(/sarkariresult\.com\.cm/gi, 'jobniti.in').replace(/Sarkari Result/gi, 'Jobniti');
+        const text = $(a).text().trim().replace(/sarkariresult\.com\.cm/gi, 'jobniti.in').replace(/Sarkari Result/gi, 'Jobniti');
         if (text.length > 3 && href.startsWith('/') && !seenHrefs.has(href)) {
           seenHrefs.add(href);
           allLinks.push({ text, href });
@@ -189,7 +189,8 @@ export async function GET(request: Request) {
     });
 
     // 9. Send to all subscribers
-    let sent = 0, errors = 0, failedEndpoints: string[] = [];
+    let sent = 0, errors = 0;
+    const failedEndpoints: string[] = [];
 
     await Promise.allSettled(
       subscriptions.map(async (sub) => {
@@ -199,9 +200,12 @@ export async function GET(request: Request) {
             payload
           );
           sent++;
-        } catch (err: any) {
+        } catch (err: unknown) {
           errors++;
-          if (err.statusCode === 404 || err.statusCode === 410) failedEndpoints.push(sub.endpoint);
+          if (err && typeof err === 'object' && 'statusCode' in err) {
+            const sc = (err as { statusCode?: number }).statusCode;
+            if (sc === 404 || sc === 410) failedEndpoints.push(sub.endpoint);
+          }
         }
       })
     );

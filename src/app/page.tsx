@@ -35,7 +35,7 @@ const fetchSarkariData = cache(async () => {
 
     const $ = cheerio.load(html);
 
-    const blocks: { title: string, links: { text: string, href: string, isViewMore?: boolean }[] }[] = [];
+    const blocks: { title: string, links: { text: string, href: string, isViewMore?: boolean, timestamp?: number }[] }[] = [];
     const topNotices: { text: string, href: string }[] = [];
 
     $('.gb-grid-column').each((i, el) => {
@@ -147,7 +147,7 @@ const fetchSarkariData = cache(async () => {
           knownLinks[linkKey] = isFirstRun ? nowTime - 2 * 24 * 60 * 60 * 1000 : nowTime;
           stateChanged = true;
         }
-        (link as any).timestamp = knownLinks[linkKey];
+        link.timestamp = knownLinks[linkKey];
       });
     });
 

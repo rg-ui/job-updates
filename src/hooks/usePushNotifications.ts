@@ -50,25 +50,25 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
-      setIsSupported(true);
-      setPermission(Notification.permission);
-      checkExistingSubscription();
-    }
-  }, []);
-
-  async function checkExistingSubscription() {
-    try {
-      const reg = await waitForSW(3000);
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        setSubscription(sub);
-        setIsSubscribed(true);
+    async function initPush() {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
+        setIsSupported(true);
+        setPermission(Notification.permission);
+        try {
+          const reg = await waitForSW(3000);
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            setSubscription(sub);
+            setIsSubscribed(true);
+          }
+        } catch {
+          // SW not ready
+        }
       }
-    } catch {
-      // SW not ready — bell will show as unsubscribed, user can click to subscribe
     }
-  }
+
+    initPush();
+  }, []);
 
   const subscribe = useCallback(async () => {
     if (!isSupported || !VAPID_PUBLIC_KEY) return false;

@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     });
 
     let sentCount = 0;
-    let failedEndpoints: string[] = [];
+    const failedEndpoints: string[] = [];
 
     const sendPromises = subscriptions.map(async (sub) => {
       try {
@@ -111,9 +111,12 @@ export async function POST(request: Request) {
           payload
         );
         sentCount++;
-      } catch (err: any) {
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          failedEndpoints.push(sub.endpoint);
+      } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'statusCode' in err) {
+          const sc = (err as { statusCode?: number }).statusCode;
+          if (sc === 404 || sc === 410) {
+            failedEndpoints.push(sub.endpoint);
+          }
         }
       }
     });

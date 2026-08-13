@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // Daily motivational quotes - changes automatically every day based on date
 const QUOTES = [
@@ -190,7 +191,7 @@ export default function JobUpdatesHeader() {
           style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px' }}
         >
           {/* Logo + Name */}
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
             <div style={{ position: 'relative', animation: 'float 5s ease-in-out infinite', flexShrink: 0 }}>
               <Image
                 src="/jobniti-logo.png"
@@ -260,7 +261,7 @@ export default function JobUpdatesHeader() {
                 </span>
               </p>
             </div>
-          </a>
+          </Link>
 
           {/* Badges — hidden on mobile via CSS */}
           <div className="header-badges" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>

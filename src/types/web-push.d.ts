@@ -22,9 +22,11 @@ declare module 'web-push' {
   function setVapidDetails(subject: string, publicKey: string, privateKey: string): void;
   function sendNotification(subscription: PushSubscription, payload: string | Buffer): Promise<SendResult>;
 
-  export default {
+  const webpush = {
     generateVAPIDKeys,
     setVapidDetails,
     sendNotification,
   };
+
+  export default webpush;
 }
