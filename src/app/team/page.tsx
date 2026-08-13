@@ -12,7 +12,7 @@ const teamMembers = [
   {
     name: 'Manii Gupta',
     role: 'Founder & Director',
-    image: null,
+    image: '/team/manii.png',
     initials: 'MG',
     color: '#0A2540',
     gradient: 'linear-gradient(135deg, #0A2540, #004D40)',
