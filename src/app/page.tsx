@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
-import { fetchUpstream, fetchViaProxy } from '@/lib/upstream';
+import { fetchUpstream } from '@/lib/upstream';
 
 const StateJobFilter = dynamic(() => import('@/components/StateJobFilter'));
 
@@ -28,11 +28,22 @@ function sanitizeUrl(url: string): string {
 
 const fetchSarkariData = cache(async () => {
   try {
-    let html = await fetchUpstream('');
+    const html = await fetchUpstream('');
     if (!html) {
-      html = await fetchViaProxy('');
-    }
-    if (!html) {
+      if (supabase) {
+        try {
+          const { data: cachedHome } = await supabase
+            .from('app_state')
+            .select('value')
+            .eq('key', 'homepage_cache')
+            .single();
+          if (cachedHome?.value) {
+            return cachedHome.value as { blocks: { title: string; links: { text: string; href: string; isViewMore?: boolean; timestamp?: number }[] }[]; topNotices: { text: string; href: string }[] };
+          }
+        } catch (e) {
+          console.warn('Could not read homepage cache from Supabase', e);
+        }
+      }
       return null;
     }
 
@@ -192,6 +203,18 @@ const fetchSarkariData = cache(async () => {
       });
 
     const result = { blocks: sortedBlocks, topNotices };
+
+    // Persist homepage cache to Supabase
+    if (supabase && sortedBlocks.length > 0) {
+      try {
+        await supabase
+          .from('app_state')
+          .upsert({ key: 'homepage_cache', value: result }, { onConflict: 'key' });
+      } catch (e) {
+        console.warn('Could not write homepage cache to Supabase', e);
+      }
+    }
+
     return result;
   } catch (error) {
     // Enhanced security logging for scraping failures
