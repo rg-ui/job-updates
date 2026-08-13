@@ -3,7 +3,7 @@ import AdsSidebar from '@/components/AdsSidebar';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchUpstream, fetchViaProxy } from '@/lib/upstream';
+import { fetchUpstream } from '@/lib/upstream';
 import { supabase } from '@/lib/supabase';
 
 let DOMPurify: typeof import('isomorphic-dompurify')['default'] | null = null;
@@ -195,41 +195,31 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
     return dbData;
   }
 
-  // 3. Fetch from upstream (with retry on timeout)
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      let html = await fetchUpstream(path, { timeoutMs: attempt === 1 ? 12000 : 18000 });
-      if (!html) {
-        html = await fetchViaProxy(path);
-      }
-      if (!html) {
-        if (attempt === 2) {
-          innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 }); // retry in 30s
-          return null;
-        }
-        continue;
-      }
-
-      await getDOMPurify();
-      const result = processHtml(html, path);
-
-      // Only cache if we actually got meaningful content
-      if (result.mainContentHtml && result.mainContentHtml.length > 200) {
-        innerPagesCache.set(path, { data: result, timestamp: now });
-        // Persist to Supabase so other Vercel instances can serve from cache
-        saveToSupabase(path, result);
-      } else {
-        // Got HTML but no content — short-cache and retry soon
-        innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 60000 });
-      }
-      return result;
-    } catch (error) {
-      console.error(`Error fetching inner page (attempt ${attempt}):`, error);
-      if (attempt === 2) {
-        innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 });
-        return null;
-      }
+  // 3. Fetch from upstream (1 single quick attempt)
+  try {
+    const html = await fetchUpstream(path);
+    if (!html) {
+      innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 }); // retry in 30s
+      return null;
     }
+
+    await getDOMPurify();
+    const result = processHtml(html, path);
+
+    // Only cache if we actually got meaningful content
+    if (result.mainContentHtml && result.mainContentHtml.length > 200) {
+      innerPagesCache.set(path, { data: result, timestamp: now });
+      // Persist to Supabase so other Vercel instances can serve from cache
+      saveToSupabase(path, result);
+    } else {
+      // Got HTML but no content — short-cache and retry soon
+      innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 60000 });
+    }
+    return result;
+  } catch (error) {
+    console.error(`Error fetching inner page:`, error);
+    innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 });
+    return null;
   }
   return null;
 }

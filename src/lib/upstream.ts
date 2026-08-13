@@ -7,7 +7,7 @@ export async function fetchViaProxy(urlPath: string): Promise<string | null> {
   const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), 6000);
 
   try {
     const res = await fetch(proxyUrl, {
