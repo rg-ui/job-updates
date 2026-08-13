@@ -105,6 +105,7 @@ export const metadata: Metadata = {
 
 import Script from 'next/script';
 import NotificationBell from '@/components/NotificationBell';
+import IndependenceDayPopup from '@/components/IndependenceDayPopup';
 
 export default function RootLayout({
   children,
@@ -241,6 +242,9 @@ export default function RootLayout({
         }}>
           <NotificationBell />
         </div>
+
+        {/* 15th August Independence Day Celebration Popup */}
+        <IndependenceDayPopup />
       </body>
     </html>
   );
