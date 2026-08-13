@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { fetchViaProxy } from '@/lib/upstream';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -201,14 +202,16 @@ export async function GET() {
     const todayIST = toISTDateString(Date.now());
 
     // 1. Fetch fresh listing from source
-    const res = await fetch('https://sarkariresult.com.cm/', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      },
-      cache: 'no-store',
-    });
-
-    const html = await res.text();
+    let html = await fetchViaProxy('');
+    if (!html) {
+      const res = await fetch('https://sarkariresult.com.cm/', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+        cache: 'no-store',
+      });
+      html = await res.text();
+    }
     const $ = cheerio.load(html);
 
     // 2. Parse all unique links from main listing

@@ -3,7 +3,7 @@ import AdsSidebar from '@/components/AdsSidebar';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchUpstream } from '@/lib/upstream';
+import { fetchUpstream, fetchViaProxy } from '@/lib/upstream';
 import { supabase } from '@/lib/supabase';
 
 let DOMPurify: typeof import('isomorphic-dompurify')['default'] | null = null;
@@ -198,7 +198,10 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
   // 3. Fetch from upstream (with retry on timeout)
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const html = await fetchUpstream(path, { timeoutMs: attempt === 1 ? 12000 : 18000 });
+      let html = await fetchUpstream(path, { timeoutMs: attempt === 1 ? 12000 : 18000 });
+      if (!html) {
+        html = await fetchViaProxy(path);
+      }
       if (!html) {
         if (attempt === 2) {
           innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 }); // retry in 30s

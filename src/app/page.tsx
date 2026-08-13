@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 import { supabase } from '@/lib/supabase';
-import { fetchUpstream } from '@/lib/upstream';
+import { fetchUpstream, fetchViaProxy } from '@/lib/upstream';
 
 const StateJobFilter = dynamic(() => import('@/components/StateJobFilter'));
 
@@ -28,7 +28,10 @@ function sanitizeUrl(url: string): string {
 
 const fetchSarkariData = cache(async () => {
   try {
-    const html = await fetchUpstream('');
+    let html = await fetchUpstream('');
+    if (!html) {
+      html = await fetchViaProxy('');
+    }
     if (!html) {
       return null;
     }

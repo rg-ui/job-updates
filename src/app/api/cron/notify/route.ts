@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import { fetchViaProxy } from '@/lib/upstream';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -44,28 +45,20 @@ function safeUpstreamUrl(href: string): string | null {
 
 async function getPostDateIST(href: string): Promise<string | null> {
   try {
-    const fullUrl = safeUpstreamUrl(href);
-    if (!fullUrl) return null;
-
-    const res = await fetch(fullUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-
-    const reader = res.body?.getReader();
-    if (!reader) return null;
-
-    let accumulated = '';
-    const decoder = new TextDecoder();
-    while (accumulated.length < 6000) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      accumulated += decoder.decode(value, { stream: true });
-      if (accumulated.includes('</head>')) { reader.cancel(); break; }
+    const slug = href.replace(/^\/+|\/+$/g, '');
+    let html = await fetchViaProxy(slug);
+    if (!html) {
+      const fullUrl = safeUpstreamUrl(href);
+      if (!fullUrl) return null;
+      const res = await fetch(fullUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) html = await res.text();
     }
+    if (!html) return null;
 
-    const match = accumulated.match(/article:published_time[^>]*content="([^"]+)"/);
+    const match = html.match(/article:published_time[^>]*content="([^"]+)"/);
     if (!match) return null;
     return toISTDateString(new Date(match[1]).getTime());
   } catch {
@@ -158,18 +151,22 @@ function processPageHtml(html: string, slug: string) {
 async function warmNewPost(supabase: SupabaseClient, href: string) {
   try {
     const slug = href.replace(/^\/+|\/+$/g, '');
-    const pageUrl = `https://sarkariresult.com.cm/${slug}/`;
-    const res = await fetch(pageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) return;
+    let html = await fetchViaProxy(slug);
+    if (!html) {
+      const pageUrl = `https://sarkariresult.com.cm/${slug}/`;
+      const res = await fetch(pageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (res.ok) html = await res.text();
+    }
 
-    const html = await res.text();
+    if (!html) return;
+
     const pageData = processPageHtml(html, slug);
 
     if (pageData.mainContentHtml.length > 100) {
@@ -199,11 +196,14 @@ export async function GET(request: Request) {
 
   try {
     // 1. Scrape listing
-    const res = await fetch('https://sarkariresult.com.cm/', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-      cache: 'no-store',
-    });
-    const html = await res.text();
+    let html = await fetchViaProxy('');
+    if (!html) {
+      const res = await fetch('https://sarkariresult.com.cm/', {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+        cache: 'no-store',
+      });
+      html = await res.text();
+    }
     const $ = cheerio.load(html);
 
     // 2. Parse links
