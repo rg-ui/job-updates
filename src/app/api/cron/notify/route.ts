@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 
 function getSupabase() {
@@ -81,6 +81,106 @@ async function pLimit<T>(tasks: (() => Promise<T>)[], concurrency: number): Prom
   }
   await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
   return results;
+}
+
+const CONTENT_SELECTORS = [
+  'main.site-main', 'main#main', 'main',
+  '.site-content .entry-content', 'article .entry-content',
+  '.entry-content', '#content', '.site-content',
+];
+
+function processPageHtml(html: string, slug: string) {
+  const $ = cheerio.load(html);
+
+  let title = $('title').text() || 'Jobniti';
+  title = title
+    .replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+    .replace(/Sarkari Result/gi, 'Jobniti');
+
+  let description = $('meta[name="description"]').attr('content') || '';
+  description = description
+    .replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+    .replace(/Sarkari Result/gi, 'Jobniti');
+
+  // Find best content container
+  let entryContent = $(CONTENT_SELECTORS[0]);
+  for (const sel of CONTENT_SELECTORS) {
+    const el = $(sel);
+    if (el.length > 0 && el.text().trim().length > 100) {
+      entryContent = el;
+      break;
+    }
+  }
+
+  let mainContentHtml = '';
+
+  if (entryContent.length > 0) {
+    entryContent.find('ins.adsbygoogle').remove();
+    entryContent.find('.code-block').remove();
+    entryContent.find('script').remove();
+    entryContent.find('style').remove();
+    entryContent.find('iframe').remove();
+
+    entryContent.find('a').each((_, a) => {
+      let href = $(a).attr('href');
+      if (!href) return;
+
+      if (href.startsWith('/wp-content/') || href.startsWith('/wp-includes/')) {
+        href = 'https://sarkariresult.com.cm' + href;
+        $(a).attr('href', href);
+      }
+
+      if (href.includes('whatsapp.com')) {
+        $(a).attr('href', 'https://chat.whatsapp.com/BD8RX29KRA18PVvPoxJSBM?s=cl&p=a&mlu=2&ilr=0');
+      } else if (href.includes('t.me') || href.includes('telegram.me')) {
+        $(a).attr('href', 'https://t.me/job1updat8');
+      } else if (href.includes('sarkariresult.com.cm')) {
+        if (href.includes('/wp-content/') || href.includes('/wp-includes/') || /\.pdf\??/i.test(href)) {
+          // keep as-is
+        } else {
+          $(a).attr('href', href.replace(/https?:\/\/(www\.)?sarkariresult\.com\.cm\//gi, '/'));
+        }
+      }
+    });
+
+    mainContentHtml = (entryContent.html() || '')
+      .replace(/SarkariResult\.com\.cm/gi, 'jobniti.in')
+      .replace(/Sarkari Result/gi, 'Jobniti')
+      .replace(/SarkariResult/gi, 'Jobniti')
+      .replace(/Since 2009/gi, 'Since 2026')
+      .replace(/About Author\s*:\s*Sanjay Singh/gi, 'About Owner : Manii Gupta')
+      .replace(/\[email\s*protected\]/gi, '<a href="/contact/email" style="color:#0000c0;font-weight:bold;">[email protected]</a>');
+  }
+
+  return { title, description, mainContentHtml, slug };
+}
+
+async function warmNewPost(supabase: SupabaseClient, href: string) {
+  try {
+    const slug = href.replace(/^\/+|\/+$/g, '');
+    const pageUrl = `https://sarkariresult.com.cm/${slug}/`;
+    const res = await fetch(pageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return;
+
+    const html = await res.text();
+    const pageData = processPageHtml(html, slug);
+
+    if (pageData.mainContentHtml.length > 100) {
+      await supabase
+        .from('app_state')
+        .upsert({ key: `slug:${slug}`, value: pageData }, { onConflict: 'key' });
+      console.log(`[cron-warm] Successfully pre-cached slug: ${slug}`);
+    }
+  } catch (err) {
+    console.warn(`[cron-warm] Failed to pre-cache ${href}:`, err);
+  }
 }
 
 export async function GET(request: Request) {
@@ -165,6 +265,9 @@ export async function GET(request: Request) {
         alreadyNotified: alreadyNotified.length,
       });
     }
+
+    // Warm cache for new posts in parallel before sending notifications
+    await Promise.allSettled(newHrefs.map(href => warmNewPost(supabase, href)));
 
     // 7. Fetch subscriptions
     const { data: subscriptions } = await supabase.from('push_subscriptions').select('endpoint, p256dh, auth');
