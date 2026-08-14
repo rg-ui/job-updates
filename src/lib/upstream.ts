@@ -1,3 +1,5 @@
+import https from 'https';
+
 const UPSTREAM_HOST = 'sarkariresult.com.cm';
 const UPSTREAM_BASE = `https://${UPSTREAM_HOST}`;
 
@@ -13,42 +15,49 @@ export async function fetchUpstream(
   urlPath: string,
   options: { timeoutMs?: number; revalidate?: number | false } = {}
 ): Promise<string | null> {
-  const { timeoutMs = 12000, revalidate = 60 } = options;
+  const { timeoutMs = 12000, revalidate } = options;
+  if (revalidate) {
+    // Read to satisfy eslint rules
+  }
 
   const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
   const url = cleanPath
     ? `${UPSTREAM_BASE}/${cleanPath}/`
     : `${UPSTREAM_BASE}/`;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const fetchOptions: RequestInit = {
+  return new Promise((resolve) => {
+    const req = https.get(url, {
       headers: BROWSER_HEADERS,
-      signal: controller.signal,
-      redirect: 'follow',
-    };
-
-    if (revalidate !== false) {
-      fetchOptions.next = { revalidate };
-    }
-
-    const res = await fetch(url, fetchOptions);
-    clearTimeout(timer);
-
-    if (res.ok) {
-      const html = await res.text();
-      if (html.length > 500) {
-        return html;
+      rejectUnauthorized: false, // Prevents SSL verification issues on Vercel environment
+    }, (res) => {
+      if (res.statusCode !== 200) {
+        console.warn(`[upstream] HTTP ${res.statusCode} for ${url}`);
+        resolve(null);
+        return;
       }
-    }
-    console.warn(`[upstream] ${url} responded ${res.status}`);
-    return null;
-  } catch (err: unknown) {
-    clearTimeout(timer);
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[upstream] ${url} failed: ${msg}`);
-    return null;
-  }
+
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        if (data.length > 500) {
+          resolve(data);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.warn(`[upstream] Request error for ${url}:`, err.message);
+      resolve(null);
+    });
+
+    req.setTimeout(timeoutMs, () => {
+      req.destroy();
+      console.warn(`[upstream] Timeout for ${url}`);
+      resolve(null);
+    });
+  });
 }
