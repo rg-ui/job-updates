@@ -1,5 +1,3 @@
-import https from 'https';
-
 const UPSTREAM_HOST = 'sarkariresult.com.cm';
 const UPSTREAM_BASE = `https://${UPSTREAM_HOST}`;
 
@@ -9,55 +7,81 @@ const BROWSER_HEADERS = {
   Accept:
     'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
   'Accept-Language': 'en-US,en;q=0.9',
+  'Cache-Control': 'no-cache',
 };
 
 export async function fetchUpstream(
   urlPath: string,
   options: { timeoutMs?: number; revalidate?: number | false } = {}
 ): Promise<string | null> {
-  const { timeoutMs = 12000, revalidate } = options;
-  if (revalidate) {
-    // Read to satisfy eslint rules
-  }
+  const { timeoutMs = 10000, revalidate = 60 } = options;
 
   const cleanPath = urlPath.replace(/^\/+|\/+$/g, '');
-  const url = cleanPath
+  const targetUrl = cleanPath
     ? `${UPSTREAM_BASE}/${cleanPath}/`
     : `${UPSTREAM_BASE}/`;
 
-  return new Promise((resolve) => {
-    const req = https.get(url, {
+  // 1. Direct fetch with fetch() (handles gzip/brotli decoding & redirects automatically)
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const fetchOptions: RequestInit = {
       headers: BROWSER_HEADERS,
-      rejectUnauthorized: false, // Prevents SSL verification issues on Vercel environment
-    }, (res) => {
-      if (res.statusCode !== 200) {
-        console.warn(`[upstream] HTTP ${res.statusCode} for ${url}`);
-        resolve(null);
-        return;
+      signal: controller.signal,
+      redirect: 'follow',
+    };
+
+    if (revalidate !== false) {
+      fetchOptions.next = { revalidate };
+    }
+
+    const res = await fetch(targetUrl, fetchOptions);
+    clearTimeout(timer);
+
+    if (res.ok) {
+      const html = await res.text();
+      if (html && html.length > 500) {
+        return html;
       }
+    }
+    console.warn(`[upstream] Direct fetch returned status ${res.status} for ${targetUrl}`);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[upstream] Direct fetch error for ${targetUrl}:`, msg);
+  }
 
-      let data = '';
-      res.on('data', (chunk) => {
-        data += chunk;
+
+  // 2. Fallback Proxy Fetch (if direct request blocked or failed)
+  const proxyGetters = [
+    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
+
+  for (const getProxyUrl of proxyGetters) {
+    try {
+      const proxyUrl = getProxyUrl(targetUrl);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+
+      const res = await fetch(proxyUrl, {
+        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        signal: controller.signal,
       });
-      res.on('end', () => {
-        if (data.length > 500) {
-          resolve(data);
-        } else {
-          resolve(null);
+      clearTimeout(timer);
+
+      if (res.ok) {
+        const html = await res.text();
+        if (html && html.length > 500) {
+          console.log(`[upstream] Proxy fetch succeeded for ${targetUrl}`);
+          return html;
         }
-      });
-    });
+      }
+    } catch {
+      // Ignore proxy error and try next fallback
+    }
+  }
 
-    req.on('error', (err) => {
-      console.warn(`[upstream] Request error for ${url}:`, err.message);
-      resolve(null);
-    });
-
-    req.setTimeout(timeoutMs, () => {
-      req.destroy();
-      console.warn(`[upstream] Timeout for ${url}`);
-      resolve(null);
-    });
-  });
+  return null;
 }
+

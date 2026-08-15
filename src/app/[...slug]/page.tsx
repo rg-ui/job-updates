@@ -188,18 +188,19 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
   }
 
   // 1. Try in-memory cache
-  // 2. Try Supabase persistent cache
+  // 2. Try Supabase persistent cache (only accept valid content)
   const dbData = await fetchFromSupabase(path);
-  if (dbData) {
+  if (dbData && dbData.mainContentHtml && dbData.mainContentHtml.length > 200) {
     innerPagesCache.set(path, { data: dbData, timestamp: now });
     return dbData;
   }
 
-  // 3. Fetch from upstream (1 single quick attempt)
+  // 3. Fetch from upstream
   try {
     const html = await fetchUpstream(path);
     if (!html) {
-      innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 }); // retry in 30s
+      if (dbData) return dbData; // Return stale dbData if available as fallback
+      innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 5000 }); // Retry in 5s
       return null;
     }
 
@@ -211,16 +212,20 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
       innerPagesCache.set(path, { data: result, timestamp: now });
       // Persist to Supabase so other Vercel instances can serve from cache
       saveToSupabase(path, result);
+      return result;
     } else {
-      // Got HTML but no content — short-cache and retry soon
-      innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 60000 });
+      // Got HTML but no content — fallback to dbData if available
+      if (dbData) return dbData;
+      innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 5000 });
+      return result;
     }
-    return result;
   } catch (error) {
     console.error(`Error fetching inner page:`, error);
-    innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 30000 });
+    if (dbData) return dbData;
+    innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 5000 });
     return null;
   }
+
   return null;
 }
 
