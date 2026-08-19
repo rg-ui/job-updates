@@ -54,31 +54,66 @@ export async function fetchUpstream(
 
   // 2. Fallback Proxy Fetch (if direct request blocked or failed)
   const proxyGetters = [
-    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    // 1. corsproxy.io
+    async (url: string) => {
+      const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 500) return text;
+      }
+      throw new Error('corsproxy.io failed');
+    },
+    // 2. api.allorigins.win (raw)
+    async (url: string) => {
+      const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 500) return text;
+      }
+      throw new Error('allorigins raw failed');
+    },
+    // 3. api.allorigins.win (JSON wrapper)
+    async (url: string) => {
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.contents && json.contents.length > 500) return json.contents;
+      }
+      throw new Error('allorigins JSON failed');
+    },
+    // 4. api.codetabs.com
+    async (url: string) => {
+      const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 500) return text;
+      }
+      throw new Error('codetabs failed');
+    },
   ];
 
-  for (const getProxyUrl of proxyGetters) {
+  for (const getProxyContent of proxyGetters) {
     try {
-      const proxyUrl = getProxyUrl(targetUrl);
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 8000);
-
-      const res = await fetch(proxyUrl, {
-        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-
-      if (res.ok) {
-        const html = await res.text();
-        if (html && html.length > 500) {
-          console.log(`[upstream] Proxy fetch succeeded for ${targetUrl}`);
-          return html;
-        }
+      const html = await getProxyContent(targetUrl);
+      if (html) {
+        console.log(`[upstream] Proxy fetch succeeded for ${targetUrl}`);
+        return html;
       }
-    } catch {
-      // Ignore proxy error and try next fallback
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[upstream] Proxy fallback failed:`, msg);
     }
   }
 
