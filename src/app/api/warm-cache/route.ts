@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import * as cheerio from 'cheerio';
+import { fetchUpstream } from '@/lib/upstream';
 
 export const maxDuration = 60;
 
@@ -103,11 +104,10 @@ export async function POST(request: Request) {
     }
 
     // 1. Fetch homepage to get all slugs
-    const homeRes = await fetch('https://sarkariresult.com.cm/', {
-      headers: BROWSER_HEADERS,
-      signal: AbortSignal.timeout(20000),
-    });
-    const homeHtml = await homeRes.text();
+    const homeHtml = await fetchUpstream('', { timeoutMs: 20000 });
+    if (!homeHtml) {
+      return NextResponse.json({ error: 'Failed to fetch homepage' }, { status: 502 });
+    }
 
     // Extract all internal job/result links
     const slugPattern = /href="https?:\/\/sarkariresult\.com\.cm\/([a-zA-Z0-9\/\-_]+)\/?"/g;
@@ -153,15 +153,8 @@ export async function POST(request: Request) {
       }
 
       try {
-        const pageUrl = `https://sarkariresult.com.cm/${slug}/`;
-        const pageRes = await fetch(pageUrl, {
-          headers: BROWSER_HEADERS,
-          signal: AbortSignal.timeout(15000),
-        });
-
-        if (!pageRes.ok) { failed++; continue; }
-
-        const html = await pageRes.text();
+        const html = await fetchUpstream(slug, { timeoutMs: 15000 });
+        if (!html) { failed++; continue; }
         const pageData = processPageHtml(html, slug);
 
         if (pageData.mainContentHtml.length > 100) {

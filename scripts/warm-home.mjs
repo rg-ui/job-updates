@@ -38,7 +38,10 @@ async function fetchWithFallbacks(targetUrl) {
     // 1. corsproxy.io
     async (url) => {
       const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(url)}`, {
-        headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] },
+        headers: {
+          'User-Agent': BROWSER_HEADERS['User-Agent'],
+          'Origin': 'http://localhost:3000',
+        },
         signal: AbortSignal.timeout(8000),
       });
       if (res.ok) {
