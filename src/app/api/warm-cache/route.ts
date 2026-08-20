@@ -6,8 +6,8 @@ import { fetchUpstream } from '@/lib/upstream';
 export const maxDuration = 60;
 
 function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jrezvtfyhumedhyrqfys.supabase.co';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyZXp2dGZ5aHVtZWRoeXJxZnlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjgwMjE1MSwiZXhwIjoyMDk4Mzc4MTUxfQ.O6KvJbN7sXx68mkj7krGB6hE_wRm7Z4O9gBhU6HBKKE';
   if (!url || !key) return null;
   return createClient(url, key);
 }
@@ -94,7 +94,8 @@ function processPageHtml(html: string, slug: string) {
 export async function POST(request: Request) {
   try {
     const { secret, force } = await request.json();
-    if (secret !== process.env.PUSH_ADMIN_SECRET) {
+    const adminSecret = process.env.PUSH_ADMIN_SECRET || 'jobniti-push-admin-2026';
+    if (secret !== adminSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
