@@ -136,12 +136,12 @@ export default function PushAdminPage() {
           btn.textContent = 'Sending...';
           resultEl.innerHTML = '';
 
-          const secret = document.getElementById('admin-secret').value;
+          const secret = document.getElementById('admin-secret').value.trim();
           const payload = {
-            title: document.getElementById('notif-title').value,
-            body: document.getElementById('notif-body').value,
-            url: document.getElementById('notif-url').value || '/',
-            tag: document.getElementById('notif-tag').value || 'jobniti-push',
+            title: document.getElementById('notif-title').value.trim(),
+            body: document.getElementById('notif-body').value.trim(),
+            url: (document.getElementById('notif-url').value || '').trim() || '/',
+            tag: (document.getElementById('notif-tag').value || '').trim() || 'jobniti-push',
           };
 
           try {
