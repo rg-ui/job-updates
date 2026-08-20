@@ -18,8 +18,8 @@ const BROWSER_HEADERS = {
 };
 
 const supabase = createClient(
-  'https://jrezvtfyhumedhyrqfys.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyZXp2dGZ5aHVtZWRoeXJxZnlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjgwMjE1MSwiZXhwIjoyMDk4Mzc4MTUxfQ.O6KvJbN7sXx68mkj7krGB6hE_wRm7Z4O9gBhU6HBKKE'
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jrezvtfyhumedhyrqfys.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyZXp2dGZ5aHVtZWRoeXJxZnlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjgwMjE1MSwiZXhwIjoyMDk4Mzc4MTUxfQ.O6KvJbN7sXx68mkj7krGB6hE_wRm7Z4O9gBhU6HBKKE'
 );
 
 let DOMPurify = null;
