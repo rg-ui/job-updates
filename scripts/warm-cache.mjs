@@ -137,8 +137,8 @@ async function main() {
   console.log('Fetching homepage...');
   const homeHtml = await fetchPage('');
   if (!homeHtml) {
-    console.error('Failed to fetch homepage');
-    process.exit(1);
+    console.warn('⚠️  Failed to fetch homepage — skipping cache warm (network may be restricted)');
+    return;
   }
   console.log('Homepage fetched successfully.\n');
 
