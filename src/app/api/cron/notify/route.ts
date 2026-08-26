@@ -256,7 +256,7 @@ export async function GET(request: Request) {
     const payload = JSON.stringify({
       title, body, url,
       tag: 'jobniti-new-update',
-      icon: '/jobniti-favicon.png',
+      icon: '/jobniti-logo.png',
       badge: '/jobniti-favicon-48.png',
     });
 

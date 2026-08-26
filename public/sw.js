@@ -26,7 +26,7 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body || 'New job update available',
-    icon: payload.icon || '/jobniti-favicon.png',
+    icon: payload.icon || '/jobniti-logo.png',
     badge: payload.badge || '/jobniti-favicon-48.png',
     vibrate: [100, 50, 100],
     data: {

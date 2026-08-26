@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       body: notificationBody,
       url: url || '/',
       tag: tag || 'jobniti-push',
-      icon: '/jobniti-favicon.png',
+      icon: '/jobniti-logo.png',
       badge: '/jobniti-favicon-48.png',
     });
 
