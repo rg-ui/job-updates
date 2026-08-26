@@ -3,44 +3,17 @@
 import React, { useState } from 'react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
-function BellIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
-
-function BellOffIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      <path d="M18.63 13A17.89 17.89 0 0 1 18 8" />
-      <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14" />
-      <path d="M18 8a6 6 0 0 0-9.33-5" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
 export default function NotificationBell() {
   const { isSupported, isSubscribed, permission, subscribe, unsubscribe } = usePushNotifications();
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [showDeniedMsg, setShowDeniedMsg] = useState(false);
   const [justSubscribed, setJustSubscribed] = useState(false);
+  const [showDeniedMsg, setShowDeniedMsg] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   if (!isSupported) return null;
 
   const handleClick = async () => {
+    if (loading) return;
+
     if (permission === 'denied') {
       setShowDeniedMsg(true);
       setTimeout(() => setShowDeniedMsg(false), 4000);
@@ -51,185 +24,187 @@ export default function NotificationBell() {
       await unsubscribe();
       setJustSubscribed(false);
     } else {
+      setLoading(true);
       const success = await subscribe();
+      setLoading(false);
       if (success) {
         setJustSubscribed(true);
-        setTimeout(() => setJustSubscribed(false), 3000);
+        setTimeout(() => setJustSubscribed(false), 4000);
       }
     }
   };
 
-  const getStateClass = () => {
-    if (permission === 'denied') return 'notif-bell-btn denied';
-    if (isSubscribed) return 'notif-bell-btn active';
-    return 'notif-bell-btn';
-  };
-
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <>
       <style dangerouslySetInnerHTML={{__html: `
-        .notif-bell-btn {
-          position: relative;
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          border: none;
+        .notif-fab {
           display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 8px;
+          padding: 12px 18px;
+          border: none;
+          border-radius: 50px;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          flex-shrink: 0;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          transition: all 0.25s ease;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
           outline: none;
-          background: linear-gradient(135deg, #1e293b, #334155);
-          color: #e2e8f0;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+          white-space: nowrap;
+          min-width: 140px;
+          justify-content: center;
         }
-        .notif-bell-btn:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+        .notif-fab-default {
+          background: linear-gradient(135deg, #ff6b00, #ff9500);
+          color: white;
+          animation: fabPulseGlow 2.5s ease-in-out infinite;
         }
-        .notif-bell-btn:active {
-          transform: scale(0.95);
-        }
-        .notif-bell-btn.active {
+        .notif-fab-active {
           background: linear-gradient(135deg, #059669, #10b981);
           color: white;
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+          box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
+          animation: none;
         }
-        .notif-bell-btn.active:hover {
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+        .notif-fab-denied {
+          background: linear-gradient(135deg, #6b7280, #9ca3af);
+          color: white;
+          opacity: 0.9;
+          animation: none;
         }
-        .notif-bell-btn.denied {
-          background: linear-gradient(135deg, #991b1b, #dc2626);
+        .notif-fab-loading {
+          background: linear-gradient(135deg, #ff6b00, #ff9500);
           color: white;
           opacity: 0.85;
-          box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+          cursor: wait;
+          animation: none;
         }
-        .bell-pulse-dot {
-          position: absolute;
-          top: 6px;
-          right: 8px;
-          width: 9px;
-          height: 9px;
-          background: #f59e0b;
-          border-radius: 50%;
-          border: 2px solid #10b981;
-          animation: dotPulse 2s ease-in-out infinite;
+        .notif-fab:hover:not(.notif-fab-loading) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
-        @keyframes dotPulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.5); opacity: 0.5; }
+        .notif-fab:active:not(.notif-fab-loading) {
+          transform: scale(0.97);
         }
-        .notif-ring {
-          position: absolute;
-          top: -3px;
-          right: -3px;
-          width: 14px;
-          height: 14px;
-          background: #ef4444;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid white;
-          animation: ringBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        @keyframes fabPulseGlow {
+          0%, 100% { box-shadow: 0 4px 20px rgba(255, 107, 0, 0.4); }
+          50% { box-shadow: 0 4px 30px rgba(255, 107, 0, 0.7), 0 0 0 6px rgba(255,107,0,0.12); }
         }
-        .notif-ring svg {
-          width: 8px;
-          height: 8px;
+        .notif-bell-svg {
+          width: 22px;
+          height: 22px;
+          flex-shrink: 0;
+        }
+        .notif-fab-active .notif-bell-svg {
+          animation: bellShake 3s ease-in-out infinite;
+        }
+        @keyframes bellShake {
+          0%, 85%, 100% { transform: rotate(0deg); }
+          87% { transform: rotate(12deg); }
+          89% { transform: rotate(-10deg); }
+          91% { transform: rotate(8deg); }
+          93% { transform: rotate(-6deg); }
+          95% { transform: rotate(4deg); }
+        }
+        .notif-success-msg {
+          position: fixed;
+          bottom: 90px;
+          right: 20px;
+          background: #059669;
           color: white;
-        }
-        @keyframes ringBounce {
-          0% { transform: scale(0); }
-          100% { transform: scale(1); }
-        }
-        .notif-tooltip {
-          position: absolute;
-          bottom: calc(100% + 10px);
-          right: 0;
-          background: white;
-          color: #1f2937;
-          padding: 12px 16px;
-          border-radius: 10px;
+          padding: 10px 18px;
+          border-radius: 12px;
           font-size: 13px;
-          font-weight: 500;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-          white-space: nowrap;
-          z-index: 1000;
-          animation: tooltipSlide 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 1px solid #e5e7eb;
-          line-height: 1.5;
+          font-weight: 700;
+          box-shadow: 0 6px 20px rgba(5,150,105,0.4);
+          z-index: 10000;
+          animation: slideUpFade 0.3s ease;
         }
-        .notif-tooltip::after {
-          content: '';
-          position: absolute;
-          bottom: -6px;
-          right: 16px;
-          width: 12px;
-          height: 12px;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-top: none;
-          border-left: none;
-          transform: rotate(45deg);
+        .notif-denied-msg {
+          position: fixed;
+          bottom: 90px;
+          right: 20px;
+          background: #dc2626;
+          color: white;
+          padding: 10px 18px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 600;
+          box-shadow: 0 6px 20px rgba(220,38,38,0.4);
+          z-index: 10000;
+          max-width: 220px;
+          text-align: center;
+          animation: slideUpFade 0.3s ease;
         }
-        @keyframes tooltipSlide {
-          from { opacity: 0; transform: translateY(6px); }
+        @keyframes slideUpFade {
+          from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .notif-tooltip-sub { color: #059669; font-weight: 700; }
-        .notif-tooltip-unsub { color: #dc2626; font-weight: 700; }
-        .notif-tooltip-denied { color: #dc2626; }
-        @media (max-width: 640px) {
-          .notif-bell-btn { width: 40px; height: 40px; }
-          .notif-bell-btn svg { width: 18px; height: 18px; }
+        .notif-spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(255,255,255,0.4);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+          flex-shrink: 0;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @media (max-width: 400px) {
+          .notif-fab {
+            min-width: 120px;
+            font-size: 13px;
+            padding: 11px 14px;
+          }
+          .notif-bell-svg { width: 20px; height: 20px; }
         }
       `}} />
 
+      {/* Main Button */}
       <button
-        className={getStateClass()}
+        className={`notif-fab ${
+          loading ? 'notif-fab-loading' :
+          permission === 'denied' ? 'notif-fab-denied' :
+          isSubscribed ? 'notif-fab-active' :
+          'notif-fab-default'
+        }`}
         onClick={handleClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        aria-label={isSubscribed ? 'Unsubscribe from notifications' : 'Subscribe to notifications'}
+        aria-label={isSubscribed ? 'Notification band karo' : 'Job Alert ON karo'}
       >
-        {isSubscribed ? (
-          <BellIcon />
-        ) : permission === 'denied' ? (
-          <BellOffIcon />
+        {loading ? (
+          <span className="notif-spinner" />
         ) : (
-          <BellIcon />
+          <svg className="notif-bell-svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+          </svg>
         )}
 
-        {isSubscribed && <span className="bell-pulse-dot"></span>}
+        <span>
+          {loading ? 'ON हो रहा...' :
+           permission === 'denied' ? '🚫 Blocked' :
+           isSubscribed ? '✅ Alert ON' :
+           '🔔 Job Alert'}
+        </span>
       </button>
 
-      {showTooltip && !showDeniedMsg && !justSubscribed && (
-        <div className="notif-tooltip">
-          {isSubscribed ? (
-            <span>
-              <span className="notif-tooltip-unsub">Subscribed</span> — Click to turn off alerts
-            </span>
-          ) : (
-            <span>
-              Get instant job alerts — <span className="notif-tooltip-sub">Click to enable</span>
-            </span>
-          )}
-        </div>
-      )}
-
+      {/* Success Message */}
       {justSubscribed && (
-        <div className="notif-tooltip" style={{ color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <CheckIcon /> Alerts enabled!
+        <div className="notif-success-msg">
+          ✅ Job Alert चालू हो गया!
         </div>
       )}
 
-      {showDeniedMsg && !justSubscribed && (
-        <div className="notif-tooltip notif-tooltip-denied">
-          Notifications blocked. Enable in browser settings.
+      {/* Denied Message */}
+      {showDeniedMsg && (
+        <div className="notif-denied-msg">
+          ⚠️ Notification band hai. Browser Settings mein Allow karo.
         </div>
       )}
-    </div>
+    </>
   );
 }
+
+
