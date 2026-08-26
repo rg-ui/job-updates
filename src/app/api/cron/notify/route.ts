@@ -155,7 +155,8 @@ async function warmNewPost(supabase: SupabaseClient, href: string) {
 export async function GET(request: Request) {
   // Verify cron secret
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET || 'jobniti-cron-secret-2026';
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

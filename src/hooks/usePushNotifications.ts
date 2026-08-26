@@ -100,14 +100,23 @@ export function usePushNotifications() {
           setSubscription(sub);
 
           // Save to server (fire and forget)
+          // Convert ArrayBuffer keys to base64 string (standard btoa, not URL-safe)
+          function arrayBufferToBase64(buffer: ArrayBuffer): string {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+          }
           fetch('/api/push/subscribe', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               endpoint: sub.endpoint,
               keys: {
-                p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('p256dh')!)))),
-                auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(sub.getKey('auth')!)))),
+                p256dh: arrayBufferToBase64(sub.getKey('p256dh')!),
+                auth: arrayBufferToBase64(sub.getKey('auth')!),
               },
             }),
           }).catch(() => {});

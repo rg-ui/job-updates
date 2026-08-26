@@ -14,7 +14,8 @@ function isValidUrl(str: string): boolean {
 }
 
 function isValidBase64(str: string): boolean {
-  return /^[A-Za-z0-9+/=]+$/.test(str) && str.length <= MAX_KEY_LENGTH;
+  // Accept both standard base64 (+, /) and URL-safe base64 (-, _) used in web push keys
+  return /^[A-Za-z0-9+/\-_=]+$/.test(str) && str.length <= 512;
 }
 
 export async function POST(request: Request) {
