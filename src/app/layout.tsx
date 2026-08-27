@@ -104,7 +104,7 @@ export const metadata: Metadata = {
 };
 
 import Script from 'next/script';
-import NotificationBell from '@/components/NotificationBell';
+
 import IndependenceDayPopup from '@/components/IndependenceDayPopup';
 
 export default function RootLayout({
@@ -233,15 +233,7 @@ export default function RootLayout({
           </div>
         </footer>
 
-        {/* Floating Notification Bell */}
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          zIndex: 9999,
-        }}>
-          <NotificationBell />
-        </div>
+
 
         {/* 15th August Independence Day Celebration Popup */}
         <IndependenceDayPopup />

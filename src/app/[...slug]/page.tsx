@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { fetchUpstream } from '@/lib/upstream';
 import { supabase } from '@/lib/supabase';
+import SlugPageContent from '@/components/SlugPageContent';
 
 let DOMPurify: typeof import('isomorphic-dompurify')['default'] | null = null;
 async function getDOMPurify() {
@@ -182,49 +183,32 @@ async function fetchInnerPage(slug: string[]): Promise<PageData | null> {
 
   const now = Date.now();
   const cached = innerPagesCache.get(path);
-
   if (cached && (now - cached.timestamp < CACHE_TTL)) {
     return cached.data;
   }
 
-  // 1. Try in-memory cache
-  // 2. Try Supabase persistent cache (only accept valid content)
+  // Server only checks Supabase cache (fast, <200ms)
+  // If not cached, client will fetch via /api/fetch-content (Edge)
   const dbData = await fetchFromSupabase(path);
   if (dbData && dbData.mainContentHtml && dbData.mainContentHtml.length > 200) {
     innerPagesCache.set(path, { data: dbData, timestamp: now });
     return dbData;
   }
 
-  // 3. Fetch from upstream
-  try {
-    const html = await fetchUpstream(path);
-    if (!html) {
-      if (dbData) return dbData; // Return stale dbData if available as fallback
-      innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 5000 }); // Retry in 5s
-      return null;
-    }
-
-    await getDOMPurify();
-    const result = processHtml(html, path);
-
-    // Only cache if we actually got meaningful content
-    if (result.mainContentHtml && result.mainContentHtml.length > 200) {
-      innerPagesCache.set(path, { data: result, timestamp: now });
-      // Persist to Supabase so other Vercel instances can serve from cache
-      saveToSupabase(path, result);
-      return result;
-    } else {
-      // Got HTML but no content — fallback to dbData if available
-      if (dbData) return dbData;
-      innerPagesCache.set(path, { data: result, timestamp: now - CACHE_TTL + 5000 });
-      return result;
-    }
-  } catch (error) {
-    console.error(`Error fetching inner page:`, error);
-    if (dbData) return dbData;
-    innerPagesCache.set(path, { data: null, timestamp: now - CACHE_TTL + 5000 });
-    return null;
-  }
+  // Background: try upstream fetch too (best-effort, will populate cache for next visit)
+  (async () => {
+    try {
+      const html = await fetchUpstream(path, { timeoutMs: 12000 });
+      if (html) {
+        await getDOMPurify();
+        const result = processHtml(html, path);
+        if (result.mainContentHtml && result.mainContentHtml.length > 200) {
+          innerPagesCache.set(path, { data: result, timestamp: Date.now() });
+          saveToSupabase(path, result);
+        }
+      }
+    } catch { /* best-effort */ }
+  })();
 
   return null;
 }
@@ -417,83 +401,12 @@ export default async function InnerPage(props: { params: Promise<{ slug: string[
       ? [resolvedParams.slug]
       : [];
 
+  // Server-side: try cache only (fast). Client will fetch if null.
   const data = await fetchInnerPage(slug);
 
-  if (!data) {
-    // Auto-retry: the page will reload after 6 seconds, giving the server
-    // time to complete the upstream fetch and cache the result
-    return (
-      <div className="grid-container" style={{ padding: '60px 20px', textAlign: 'center' }}>
-        {/* Auto-reload after 6 seconds */}
-        <meta httpEquiv="refresh" content="6" />
-
-        <div style={{
-          display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-          background: '#fff', borderRadius: '24px', padding: '48px 40px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.08)', maxWidth: '480px', width: '100%',
-        }}>
-          {/* Animated spinner */}
-          <div style={{
-            width: '72px', height: '72px', borderRadius: '50%',
-            border: '4px solid #e5e7eb',
-            borderTopColor: '#059669',
-            animation: 'spin 1s linear infinite',
-            marginBottom: '24px',
-          }} />
-
-          <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#0A2540', marginBottom: '10px' }}>
-            Fetching Notification Details...
-          </h1>
-          <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.7', marginBottom: '28px' }}>
-            This update is being fetched from official sources. The page will
-            <strong style={{ color: '#059669' }}> auto-refresh in a few seconds</strong>.
-            If it doesn&apos;t refresh, click the button below.
-          </p>
-
-          {/* Progress bar */}
-          <div style={{
-            width: '100%', height: '6px', background: '#f3f4f6',
-            borderRadius: '99px', overflow: 'hidden', marginBottom: '28px',
-          }}>
-            <div style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, #059669, #10b981)',
-              borderRadius: '99px',
-              animation: 'progress 6s linear forwards',
-            }} />
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <a href="" style={{
-              display: 'inline-block', padding: '11px 26px',
-              background: 'linear-gradient(135deg, #059669, #10b981)',
-              color: 'white', borderRadius: '30px', fontWeight: '700',
-              fontSize: '14px', textDecoration: 'none',
-              boxShadow: '0 4px 14px rgba(16,185,129,0.3)',
-            }}>
-              🔄 Retry Now
-            </a>
-            <Link href="/" style={{
-              display: 'inline-block', padding: '11px 26px',
-              background: '#f9fafb', color: '#374151', borderRadius: '30px',
-              fontWeight: '600', fontSize: '14px', textDecoration: 'none',
-              border: '1px solid #e5e7eb',
-            }}>
-              ← Back to Home
-            </Link>
-          </div>
-        </div>
-
-        <style dangerouslySetInnerHTML={{ __html: `
-          @keyframes spin { to { transform: rotate(360deg); } }
-          @keyframes progress { from { width: 0%; } to { width: 100%; } }
-        `}} />
-      </div>
-    );
-  }
-
-  const { preparationTips, careerAdvice, faqItems } = getOriginalSections(data.title);
-  const jobPostingJsonLd = buildJobPostingJsonLd(data.title, data.description, slug);
+  // Use empty title/desc for sections when data not yet cached — client will fetch
+  const { preparationTips, careerAdvice, faqItems } = getOriginalSections(data?.title ?? '');
+  const jobPostingJsonLd = buildJobPostingJsonLd(data?.title ?? '', data?.description ?? '', slug);
 
   return (
     <div className="grid-container">
@@ -502,12 +415,11 @@ export default async function InnerPage(props: { params: Promise<{ slug: string[
         {/* Main Content Area */}
         <div style={{ flex: '1 1 70%', minWidth: '300px' }}>
           
-          {/* Official Notification Content */}
+          {/* Official Notification Content — fetched client-side via Edge API */}
           <div className="category-box">
-            <div 
-              style={{ padding: '20px', backgroundColor: '#fff' }}
-              className="parsed-content"
-              dangerouslySetInnerHTML={{ __html: data.mainContentHtml || '<p>Content not available.</p>' }} 
+            <SlugPageContent
+              slug={slug}
+              initialHtml={data?.mainContentHtml || null}
             />
           </div>
 
