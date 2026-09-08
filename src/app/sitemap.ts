@@ -1,10 +1,11 @@
 import { MetadataRoute } from 'next';
+import { GUIDE_ARTICLES } from '@/data/guides';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://jobniti.in';
   const now = new Date();
 
-  return [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: now,
@@ -48,6 +49,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/guides`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/about`,
       lastModified: now,
       changeFrequency: 'monthly',
@@ -84,4 +91,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
   ];
+
+  const guideRoutes: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({
+    url: `${baseUrl}/guides/${article.slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...guideRoutes];
 }

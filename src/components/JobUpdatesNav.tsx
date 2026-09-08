@@ -10,6 +10,7 @@ const navLinks = [
   { label: 'Admission', href: '/admission' },
   { label: 'Syllabus', href: '/syllabus' },
   { label: 'Answer Key', href: '/answer-key' },
+  { label: 'Career Guides', href: '/guides' },
   { label: 'Contact Us', href: '/contact' },
 ];
 
@@ -123,7 +124,7 @@ export default function JobUpdatesNav() {
         </span>
         <button
           className="hamburger-btn"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={() => setMenuOpen(!menuOpen)} 
           aria-label="Toggle navigation menu"
         >
           <span style={{ transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }}></span>

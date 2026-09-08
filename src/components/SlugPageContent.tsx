@@ -245,12 +245,100 @@ export default function SlugPageContent({ slug, initialHtml }: Props) {
   }
 
   return (
-    <>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '10px 0' }}>
+      {/* Jobniti Top Verification & Editorial Badge */}
+      <div style={{
+        background: 'linear-gradient(135deg, #f0fdf4 0%, #e6f4ea 100%)',
+        border: '1px solid #bbf7d0',
+        borderRadius: '12px',
+        padding: '16px 20px',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '12px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '20px' }}>✅</span>
+          <div>
+            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#065f46' }}>
+              Jobniti Verified Information Desk
+            </h4>
+            <p style={{ margin: 0, fontSize: '12px', color: '#047857' }}>
+              Fact-checked against official recruitment notifications. Verify dates &amp; eligibility before applying.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/guides/online-application-error-prevention-guide"
+          style={{
+            background: '#16a34a',
+            color: '#ffffff',
+            fontSize: '12px',
+            fontWeight: 700,
+            padding: '6px 14px',
+            borderRadius: '20px',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          📋 Application Checklist &rarr;
+        </Link>
+      </div>
+
+      {/* Main Detail Content */}
       <div
         className="parsed-content"
-        style={{ padding: '20px', backgroundColor: '#fff' }}
+        style={{ padding: '20px', backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
+
+      {/* Jobniti Bottom Candidate Advice & Original Guides Section */}
+      <div style={{
+        marginTop: '28px',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '14px',
+        padding: '24px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+      }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0A2540', marginTop: 0, marginBottom: '12px' }}>
+          💡 Jobniti Candidate Guidance &amp; Tips
+        </h3>
+        <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '14px', color: '#475569', lineHeight: '1.7' }}>
+          <li><strong>Official Website Cross-Check:</strong> Always verify eligibility criteria, key dates, and official notification PDFs directly on the recruiting authority&apos;s website.</li>
+          <li><strong>Document Specifications:</strong> Ensure your passport photo (light background) and signature (dark ink) meet specified file sizes before uploading.</li>
+          <li><strong>Category Certificate:</strong> Verify that your EWS/OBC-NCL/SC/ST/PwBD certificates are valid for the current financial year.</li>
+        </ul>
+
+        <div style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f1f5f9',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '10px',
+        }}>
+          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>
+            Want detailed preparation strategies for SSC, Railways, or UPSC?
+          </span>
+          <Link
+            href="/guides"
+            style={{
+              color: '#16a34a',
+              fontSize: '13px',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
+          >
+            Explore Jobniti Career Guides &rarr;
+          </Link>
+        </div>
+      </div>
+
       <style>{`
         .parsed-content { max-width: 100%; overflow-x: auto; font-size: 15px; line-height: 1.6; color: #333; }
         .parsed-content img { max-width: 100%; height: auto; border-radius: 8px; }
@@ -269,6 +357,6 @@ export default function SlugPageContent({ slug, initialHtml }: Props) {
         .parsed-content ul { list-style: inside; text-align: left; margin: 15px 0; padding-left: 10px; }
         .parsed-content li { margin-bottom: 8px; }
       `}</style>
-    </>
+    </div>
   );
 }
