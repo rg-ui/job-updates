@@ -106,6 +106,7 @@ export const metadata: Metadata = {
 import Script from 'next/script';
 
 import IndependenceDayPopup from '@/components/IndependenceDayPopup';
+import AdmissionPopup from '@/components/AdmissionPopup';
 
 export default function RootLayout({
   children,
@@ -238,6 +239,9 @@ export default function RootLayout({
 
         {/* 15th August Independence Day Celebration Popup */}
         <IndependenceDayPopup />
+
+        {/* Admission & Degree Guidance Popup */}
+        <AdmissionPopup />
       </body>
     </html>
   );
