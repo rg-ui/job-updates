@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -45,286 +47,347 @@ function getDailyQuote() {
 
 export default function JobUpdatesHeader() {
   const quote = getDailyQuote();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    const term = searchQuery.toLowerCase().trim();
+    const links = document.querySelectorAll('a');
+    let found = false;
+
+    for (const link of Array.from(links)) {
+      if (link.textContent && link.textContent.toLowerCase().includes(term)) {
+        link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        link.style.outline = '3px solid #10B981';
+        link.style.borderRadius = '4px';
+        setTimeout(() => {
+          link.style.outline = '';
+        }, 3000);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      const content = document.querySelector('main') || document.querySelector('.grid-container');
+      if (content) {
+        content.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <header style={{ position: 'relative', overflow: 'hidden' }}>
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes gradientBG {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes pulse-dot {
+        @keyframes pulseDotLive {
           0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.4); opacity: 0.7; }
+          50% { transform: scale(1.35); opacity: 0.7; }
           100% { transform: scale(1); opacity: 1; }
         }
-        @keyframes quoteGlow {
-          0% { box-shadow: 0 0 8px rgba(46, 204, 113, 0.15); }
-          50% { box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
-          100% { box-shadow: 0 0 8px rgba(46, 204, 113, 0.15); }
+        @keyframes floatLogoSmooth {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
         }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+        .mint-gradient-header {
+          background: linear-gradient(135deg, #2dd4bf 0%, #06b6d4 50%, #10b981 100%);
+          position: relative;
         }
-        .animated-header-bg {
-          background: linear-gradient(-45deg,
-            rgba(135, 206, 235, 0.75),
-            rgba(34, 193, 195, 0.75),
-            rgba(46, 204, 113, 0.75),
-            rgba(135, 206, 235, 0.75));
-          background-size: 400% 400%;
-          animation: gradientBG 15s ease infinite;
-        }
-        .glass-blob {
-          position: absolute;
-          filter: blur(55px);
-          z-index: 0;
-          border-radius: 50%;
-          opacity: 0.7;
-          animation: float 8s ease-in-out infinite;
-          pointer-events: none;
-        }
-        .daily-quote-bar {
-          animation: quoteGlow 4s ease-in-out infinite, fadeInUp 0.8s ease forwards;
-        }
-        .quote-text {
-          font-style: italic;
-          font-size: 15px;
-          font-weight: 600;
-          color: #0A2540;
-          line-height: 1.5;
-        }
-        .quote-author {
-          font-size: 12px;
-          color: #2E7D32;
+        .mint-glass-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 7px 14px;
+          border-radius: 9999px;
+          font-size: 13px;
           font-weight: 700;
-          margin-top: 4px;
+          color: #0A2540;
+          text-decoration: none;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 2px 8px rgba(10, 37, 64, 0.08);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
         }
-        /* Mobile responsive header styles */
-        @media (max-width: 480px) {
-          .header-logo-img {
-            width: 72px !important;
-            height: 72px !important;
-            padding: 8px !important;
-          }
-          .header-title {
-            font-size: 28px !important;
-            letter-spacing: 1px !important;
-          }
-          .header-subtitle {
-            font-size: 14px !important;
-          }
-          .header-badges {
-            display: none !important;
-          }
-          .quote-text {
-            font-size: 12px !important;
-          }
-          .quote-author {
-            font-size: 10px !important;
-          }
-          .daily-quote-bar {
-            padding: 10px 12px !important;
-            gap: 8px !important;
-          }
-          .quote-icon {
-            font-size: 20px !important;
-          }
-          .aaj-ka-vichar-badge {
-            display: none !important;
-          }
-          .no-ads-badge {
-            font-size: 7px !important;
-            padding: 4px 7px !important;
-            right: -40px !important;
-            top: -14px !important;
-          }
-          .top-microbar-right {
-            display: none !important;
-          }
+        .mint-glass-pill:hover {
+          background: #FFFFFF;
+          color: #004D40;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(10, 37, 64, 0.15);
+          text-decoration: none;
+        }
+        .search-pill-container {
+          display: flex;
+          align-items: center;
+          background: rgba(10, 37, 64, 0.92);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border-radius: 9999px;
+          padding: 3px 4px 3px 12px;
+          box-shadow: 0 2px 10px rgba(0, 77, 64, 0.2);
+          transition: all 0.2s ease;
+          width: 250px;
+        }
+        .search-pill-container:focus-within {
+          background: #0A2540;
+          box-shadow: 0 4px 16px rgba(0, 77, 64, 0.35);
+          width: 270px;
+        }
+        .search-pill-input {
+          border: none;
+          background: transparent;
+          outline: none;
+          font-size: 12.5px;
+          color: #FFFFFF;
+          width: 100%;
+          font-family: inherit;
+        }
+        .search-pill-input::placeholder {
+          color: #94A3B8;
+        }
+        .search-pill-btn {
+          border: none;
+          background: #10B981;
+          color: #FFFFFF;
+          padding: 5px 12px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .search-pill-btn:hover {
+          background: #059669;
+        }
+        .quote-glass-card {
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border-radius: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.95);
+          box-shadow: 0 4px 15px rgba(0, 77, 64, 0.07);
+          padding: 9px 18px;
+          transition: all 0.2s ease;
         }
         @media (max-width: 768px) {
-          .animated-header-bg {
-            padding: 20px 12px 16px !important;
+          .header-main-pad {
+            padding: 16px 12px 14px !important;
           }
-          .header-main-row {
-            gap: 20px !important;
-          }
-          .header-title {
+          .header-brand-title {
             font-size: 32px !important;
           }
-          .header-badges {
+          .header-circle-logo {
+            width: 76px !important;
+            height: 76px !important;
+            padding: 6px !important;
+          }
+          .header-right-stack {
+            align-items: center !important;
+            width: 100% !important;
+            margin-top: 6px;
+          }
+          .header-pills-row {
+            justify-content: center !important;
+          }
+          .search-pill-container {
+            width: 100% !important;
+            max-width: 300px !important;
+          }
+          .top-bar-right-text {
             display: none !important;
           }
         }
       `}} />
 
-      {/* Background blobs */}
-      <div className="glass-blob" style={{ background: '#00E5FF', width: '250px', height: '250px', top: '-80px', left: '-40px' }}></div>
-      <div className="glass-blob" style={{ background: '#00E676', width: '200px', height: '200px', bottom: '-80px', right: '-40px', animationDelay: '2s' }}></div>
-
-      {/* Top micro-bar */}
-      <div style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)', position: 'relative', zIndex: 1, borderBottom: '1px solid rgba(255,255,255,0.4)' }}>
-        <div className="grid-container" style={{ padding: '5px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', fontWeight: '600', color: '#333', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
-            <span style={{ display: 'inline-block', width: '7px', height: '7px', background: '#FF3D00', borderRadius: '50%', animation: 'pulse-dot 2s infinite' }}></span>
-            Live Updates 24/7
+      {/* Top Micro Bar */}
+      <div style={{ background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(255, 255, 255, 0.45)', position: 'relative', zIndex: 2 }}>
+        <div className="grid-container" style={{ padding: '5px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#1E293B', fontWeight: '600' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#FF3D00', borderRadius: '50%', animation: 'pulseDotLive 2s infinite' }}></span>
+            <span style={{ color: '#0A2540', fontWeight: '700' }}>Live Updates 24/7</span>
+            <span style={{ color: 'rgba(0,0,0,0.2)' }}>|</span>
+            <span style={{ color: '#334155' }}>India&apos;s Trusted Govt Job Portal</span>
           </div>
-          <div className="top-microbar-right" style={{ textAlign: 'right', fontSize: '11px' }}>India&apos;s Trusted Govt Job Portal</div>
+          <div className="top-bar-right-text" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11.5px' }}>
+            <span style={{ color: '#004D40', fontWeight: '700' }}>⚡ No Ads • Fastest Updates</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <div
-        className="animated-header-bg"
-        style={{ padding: '28px 12px 22px', position: 'relative', zIndex: 1, backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)' }}
-      >
-        <div
-          className="grid-container header-main-row"
-          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '30px' }}
-        >
-          {/* Logo + Name */}
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
-            <div style={{ position: 'relative', animation: 'float 5s ease-in-out infinite', flexShrink: 0 }}>
-              <Image
-                src="/jobniti-logo.png"
-                alt="Jobniti Logo"
-                className="header-logo-img"
-                width={100}
-                height={100}
-                priority
-                style={{
-                  objectFit: 'cover',
-                  background: 'rgba(255,255,255,0.95)',
-                  padding: '10px',
-                  borderRadius: '50%',
-                  boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
-                  border: '3px solid rgba(255,255,255,0.9)',
-                  display: 'block',
-                }}
-              />
+      {/* Main Header Row */}
+      <div className="mint-gradient-header header-main-pad" style={{ padding: '20px 14px 16px', position: 'relative', zIndex: 1 }}>
+        <div className="grid-container" style={{ position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+            
+            {/* Logo + Branding */}
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
+              {/* Clean White Circular Logo Frame */}
               <div
-                className="no-ads-badge"
+                className="header-circle-logo"
                 style={{
-                  position: 'absolute',
-                  top: '-16px',
-                  right: '-48px',
-                  background: 'linear-gradient(135deg, #004D40, #0A2540)',
-                  color: '#fff',
-                  padding: '4px 9px',
-                  borderRadius: '20px',
-                  fontSize: '8px',
-                  fontWeight: '800',
-                  boxShadow: '0 3px 8px rgba(0,77,64,0.5)',
-                  letterSpacing: '0.4px',
-                  whiteSpace: 'nowrap',
-                  textAlign: 'center',
-                  lineHeight: '1.4',
+                  width: '88px',
+                  height: '88px',
+                  borderRadius: '50%',
+                  background: '#FFFFFF',
+                  padding: '7px',
+                  boxShadow: '0 6px 20px rgba(0, 77, 64, 0.15)',
+                  border: '3px solid rgba(255, 255, 255, 0.95)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  animation: 'floatLogoSmooth 5s ease-in-out infinite',
                 }}
               >
-                NO ADS<br/>ONLY UPDATES
+                <Image
+                  src="/jobniti-logo.png"
+                  alt="Jobniti Logo"
+                  width={74}
+                  height={74}
+                  priority
+                  style={{
+                    objectFit: 'contain',
+                    borderRadius: '50%',
+                    display: 'block',
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
               </div>
-            </div>
 
-            <div>
-              <h1
-                className="header-title"
-                style={{
-                  fontSize: '46px',
-                  fontWeight: '900',
-                  background: 'linear-gradient(135deg, #0A2540 0%, #004D40 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textTransform: 'uppercase',
-                  letterSpacing: '2px',
-                  margin: '0',
-                  filter: 'drop-shadow(1px 3px 4px rgba(0,0,0,0.1))',
-                  lineHeight: 1.1,
-                }}
-              >
-                Jobniti
-              </h1>
-              <p
-                className="header-subtitle"
-                style={{ fontSize: '17px', color: '#004D40', margin: '5px 0 0', fontWeight: '700', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}
-              >
-                jobniti.in
-                <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.7)', color: '#2E7D32', padding: '2px 9px', borderRadius: '12px', border: '1px solid rgba(165,214,167,0.5)', fontWeight: '800' }}>
-                  ✓ Official
-                </span>
-              </p>
-            </div>
-          </Link>
+              <div>
+                <h1
+                  className="header-brand-title"
+                  style={{
+                    fontSize: '38px',
+                    fontWeight: '900',
+                    letterSpacing: '1.2px',
+                    textTransform: 'uppercase',
+                    color: '#0A2540',
+                    lineHeight: 1.1,
+                    margin: 0,
+                  }}
+                >
+                  Jobniti
+                </h1>
 
-          {/* Badges — hidden on mobile via CSS */}
-          <div className="header-badges" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-            <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', padding: '10px 22px', borderRadius: '28px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid rgba(255,255,255,0.8)', display: 'flex', gap: '18px' }}>
-              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span>🚀</span> Latest Results
-              </span>
-              <span style={{ color: '#ccc' }}>|</span>
-              <span style={{ fontWeight: '700', color: '#0A2540', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span>🎯</span> Admit Cards
-              </span>
-            </div>
-            <div style={{ background: 'linear-gradient(135deg, #004D40 0%, #0A2540 100%)', color: 'white', padding: '9px 26px', borderRadius: '22px', fontSize: '13px', fontWeight: '600', boxShadow: '0 4px 14px rgba(0,0,0,0.18)', letterSpacing: '0.4px' }}>
-              Search 500+ Sarkari Jobs
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap', marginTop: '4px' }}>
+                  <span style={{ fontSize: '14.5px', color: '#004D40', fontWeight: '800', letterSpacing: '0.3px' }}>
+                    jobniti.in
+                  </span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                      fontSize: '11px',
+                      background: 'rgba(255, 255, 255, 0.92)',
+                      color: '#047857',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.95)',
+                      fontWeight: '800',
+                    }}
+                  >
+                    ✓ Official
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '10.5px',
+                      background: 'rgba(10, 37, 64, 0.85)',
+                      color: '#FFFFFF',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      letterSpacing: '0.3px',
+                    }}
+                  >
+                    🛡️ No Ads
+                  </span>
+                </div>
+              </div>
+            </Link>
+
+            {/* Quick Action Navigation & Search (Right Side) */}
+            <div className="header-right-stack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '9px' }}>
+              {/* Row 1: Action Pills */}
+              <div className="header-pills-row" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+                <Link href="/result" className="mint-glass-pill">
+                  <span>🚀</span> Latest Results
+                </Link>
+                <Link href="/admit-card" className="mint-glass-pill">
+                  <span>🎯</span> Admit Cards
+                </Link>
+                <Link href="/latest-jobs" className="mint-glass-pill">
+                  <span>⚡</span> Latest Jobs
+                </Link>
+              </div>
+
+              {/* Row 2: Clean Search Bar */}
+              <form onSubmit={handleSearch} className="search-pill-container">
+                <span style={{ fontSize: '12px', marginRight: '6px' }}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search Sarkari Jobs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-pill-input"
+                  aria-label="Search Sarkari Jobs"
+                />
+                <button type="submit" className="search-pill-btn">
+                  Search
+                </button>
+              </form>
             </div>
           </div>
-        </div>
 
-        {/* Daily Quote */}
-        <div className="grid-container" style={{ marginTop: '18px' }}>
-          <div
-            className="daily-quote-bar"
-            style={{
-              background: 'rgba(255,255,255,0.78)',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-              borderRadius: '18px',
-              padding: '12px 20px',
-              border: '1px solid rgba(46,204,113,0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              maxWidth: '780px',
-              margin: '0 auto',
-            }}
-          >
-            <span className="quote-icon" style={{ fontSize: '24px', lineHeight: 1, flexShrink: 0 }}>💡</span>
-            <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-              <div className="quote-text">&ldquo;{quote.text}&rdquo;</div>
-              <div className="quote-author">— {quote.author}</div>
-            </div>
+          {/* Daily Motivational Quote (Aaj ka Vichar) */}
+          <div style={{ marginTop: '14px' }}>
             <div
-              className="aaj-ka-vichar-badge"
+              className="quote-glass-card"
               style={{
-                flexShrink: 0,
-                background: 'linear-gradient(135deg, #2E7D32, #004D40)',
-                color: 'white',
-                padding: '4px 10px',
-                borderRadius: '18px',
-                fontSize: '10px',
-                fontWeight: '700',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 2px 6px rgba(46,204,113,0.4)',
+                maxWidth: '780px',
+                margin: '0 auto',
+                textAlign: 'center',
               }}
             >
-              ✨ Aaj ka Vichar
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span style={{ fontSize: '18px', lineHeight: 1 }}>💡</span>
+                <span
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    fontStyle: 'italic',
+                    color: '#0A2540',
+                    lineHeight: '1.4',
+                  }}
+                >
+                  &ldquo;{quote.text}&rdquo;
+                </span>
+                <span
+                  style={{
+                    fontSize: '11.5px',
+                    fontWeight: '800',
+                    color: '#004D40',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  — {quote.author}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Gradient bottom border */}
-      <div style={{ height: '3px', background: 'linear-gradient(90deg, #00E5FF, #00E676, #00E5FF)', backgroundSize: '200%', animation: 'gradientBG 4s ease infinite' }}></div>
+      {/* Clean bottom line */}
+      <div style={{ height: '3px', background: 'linear-gradient(90deg, #0A2540, #004D40, #10B981, #004D40, #0A2540)' }}></div>
     </header>
   );
 }

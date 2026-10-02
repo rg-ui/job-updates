@@ -26,21 +26,23 @@ export default function JobUpdatesNav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="bg-darkblue" style={{ borderBottom: '3px solid #22c55e', position: 'relative', zIndex: 100 }}>
+    <nav style={{ background: '#051324', borderBottom: '2px solid rgba(16, 185, 129, 0.6)', position: 'relative', zIndex: 100, boxShadow: '0 4px 14px rgba(0,0,0,0.25)' }}>
       <style dangerouslySetInnerHTML={{__html: `
         .nav-link-item {
           display: block;
-          color: white;
-          padding: 11px 14px;
+          color: #E2E8F0;
+          padding: 10px 13px;
           font-weight: 600;
-          font-size: 14px;
+          font-size: 13.5px;
           text-decoration: none;
           white-space: nowrap;
-          transition: background 0.2s;
+          border-radius: 6px;
+          margin: 2px 2px;
+          transition: all 0.2s ease;
         }
         .nav-link-item:hover {
-          background-color: #16a34a;
-          color: white;
+          background-color: rgba(16, 185, 129, 0.18);
+          color: #34D399;
           text-decoration: none;
         }
         .hamburger-btn {
@@ -64,7 +66,7 @@ export default function JobUpdatesNav() {
         .mobile-menu {
           display: none;
           flex-direction: column;
-          background: #05055f;
+          background: #051324;
           border-top: 1px solid rgba(255,255,255,0.1);
           padding: 6px 0;
         }
@@ -72,9 +74,11 @@ export default function JobUpdatesNav() {
           display: flex;
         }
         .mobile-menu .nav-link-item {
-          padding: 13px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid rgba(255,255,255,0.07);
+          padding: 12px 20px;
+          font-size: 14.5px;
+          border-radius: 0;
+          margin: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         @media (max-width: 640px) {
           .nav-desktop { display: none !important; }
@@ -88,8 +92,8 @@ export default function JobUpdatesNav() {
       `}} />
 
       {/* Desktop Nav */}
-      <div className="grid-container nav-desktop" style={{ display: 'none', padding: '0 10px' }}>
-        <ul style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', margin: 0 }}>
+      <div className="grid-container nav-desktop" style={{ display: 'none', padding: '2px 10px' }}>
+        <ul style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', margin: 0, width: '100%' }}>
           {navLinks.map((link) => (
             <li key={link.label}>
               <Link href={link.href} className="nav-link-item">
@@ -98,13 +102,13 @@ export default function JobUpdatesNav() {
             </li>
           ))}
           <li style={{ marginLeft: 'auto' }}>
-            <span style={{ display: 'flex', gap: 0 }}>
+            <span style={{ display: 'flex', gap: '2px' }}>
               {complianceLinks.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
                   className="nav-link-item"
-                  style={{ fontSize: '12px', padding: '11px 10px', opacity: 0.85 }}
+                  style={{ fontSize: '11.5px', padding: '9px 8px', color: '#94A3B8' }}
                 >
                   {link.label}
                 </Link>
