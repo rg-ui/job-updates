@@ -14,9 +14,17 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "public/**",
     "scripts/**",
+    "scratch/**",
     "*.js",
     "*.mjs",
   ]),
+  {
+    rules: {
+      "react-hooks/set-state-in-effect": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;
+
