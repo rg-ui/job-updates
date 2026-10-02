@@ -513,8 +513,8 @@ export default async function InnerPage(props: { params: Promise<{ slug: string[
 
         {/* Sidebar Area */}
         <div style={{ flex: '1 1 25%', minWidth: '250px' }}>
-          <AdsSidebar />
-          <AdsSidebar />
+          <AdsSidebar variant="admission" />
+          <AdsSidebar variant="degree" />
         </div>
 
       </div>

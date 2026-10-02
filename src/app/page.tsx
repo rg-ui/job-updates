@@ -277,8 +277,8 @@ export default async function Home() {
 
         {/* Sidebar — desktop only (hidden on mobile via CSS) */}
         <div className="sidebar-area">
-          <AdsSidebar />
-          <AdsSidebar />
+          <AdsSidebar variant="admission" />
+          <AdsSidebar variant="degree" />
         </div>
 
       </div>
